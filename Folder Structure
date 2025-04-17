@@ -1,0 +1,22 @@
+Loan-Default-Risk-Predictor/
+│
+├── data/
+│   └── raw_data.csv
+│
+├── notebooks/
+│   └── exploratory_analysis.ipynb
+│   └── model_training.ipynb
+│
+├── src/
+│   ├── data_cleaning.py
+│   ├── feature_engineering.py
+│   └── train_model.py
+│
+├── outputs/
+│   └── plots/
+│   └── metrics.json
+│
+├── .gitignore
+├── README.md
+├── LICENSE (MIT)
+└── requirements.txt
