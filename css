@@ -1,0 +1,13 @@
+[ Raw Data Sources ]
+        ↓
+[ Data Ingestion / ETL ]
+        ↓
+[ Feature Engineering ]
+        ↓
+[ Model Training ]
+        ↓
+[ Model Evaluation ]
+        ↓
+[ Inference Pipeline ]
+        ↓
+[ Business Application / API / Dashboard ]
