@@ -1,0 +1,33 @@
+# ☑️ Python cache
+__pycache__/
+*.py[cod]
+
+# ☑️ Build artifacts
+build/
+dist/
+*.egg-info/
+
+# ☑️ Notebooks & local data dumps
+*.ipynb
+data/
+synthetic_data.csv
+
+# ☑️ Test & coverage outputs
+coverage.*
+htmlcov/
+TestResults/
+pytest_cache/
+
+# ☑️ Documentation builds
+docs/site/
+*.log
+
+# ☑️ Editor & OS artifacts
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db
+
+# ☑️ Git
+.git
+.gitignore
