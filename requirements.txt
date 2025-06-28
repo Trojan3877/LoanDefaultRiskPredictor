@@ -1,6 +1,26 @@
-pandas
-numpy
-scikit-learn
-matplotlib
-seaborn
-xgboost
+# ─── Core ───────────────────────────────────────────────
+pandas==2.2.2
+numpy==1.26.4
+scikit-learn==1.5.0
+lightgbm==4.3.0
+optuna==3.6.1
+fastapi==0.111.0
+uvicorn[standard]==0.30.0
+
+# ─── MLOps & Metrics ───────────────────────────────────
+prometheus-client==0.20.0
+python-multipart==0.0.9
+mlflow==2.12.2
+snowflake-connector-python==3.6.0
+
+# ─── OpenTelemetry (optional tracing) ──────────────────
+opentelemetry-sdk==1.24.0
+opentelemetry-exporter-otlp==1.24.0
+opentelemetry-instrumentation-fastapi==0.44b0
+
+# ─── Testing & Tooling ─────────────────────────────────
+pytest==8.2.0
+coverage==7.5.1
+ruff==0.4.4
+black==24.4.2
+pre-commit==3.7.1
