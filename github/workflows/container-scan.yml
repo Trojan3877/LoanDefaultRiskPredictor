@@ -1,0 +1,44 @@
+name: Container-Security-Scan
+
+on:
+  push:
+    branches: [main]
+    paths: ["Dockerfile", ".github/workflows/container-scan.yml"]
+  schedule:
+    - cron: "0 2 * * 1"        # Mondays 02:00 UTC
+  workflow_dispatch: {}
+
+jobs:
+  trivy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: 📥 Checkout
+        uses: actions/checkout@v4
+
+      # ── Build container image for scanning ───────────────────────────────
+      - name: 🔨 Build image
+        run: docker build -t loanrisk-scan:ci .
+
+      # ── Run Trivy vulnerability scan (fails CI on HIGH/CRITICAL) ─────────
+      - name: 🔎 Trivy vuln scan
+        uses: aquasecurity/trivy-action@0.16.0
+        with:
+          image-ref: loanrisk-scan:ci
+          format: table
+          exit-code: 1
+          ignore-unfixed: true
+          severity: CRITICAL,HIGH
+
+      # ── Generate SPDX SBOM and upload artifact ───────────────────────────
+      - name: 📜 SBOM (SPDX)
+        uses: aquasecurity/trivy-action@0.16.0
+        with:
+          image-ref: loanrisk-scan:ci
+          format: spdx-json
+          output: sbom.spdx.json
+
+      - name: 📤 Upload SBOM
+        uses: actions/upload-artifact@v3
+        with:
+          name: SBOM
+          path: sbom.spdx.json
