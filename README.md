@@ -1,5 +1,7 @@
 # 🏦 LoanDefaultRiskPredictor
 
+# 🏦 LoanDefaultRiskPredictor
+
 ![Capstone](https://img.shields.io/badge/Project-Capstone-blueviolet?style=for-the-badge)
 ![Build](https://github.com/Trojan3877/LoanDefaultRiskPredictor/actions/workflows/ci.yml/badge.svg?style=for-the-badge)
 ![Coverage](https://codecov.io/gh/Trojan3877/LoanDefaultRiskPredictor/branch/main/graph/badge.svg?style=for-the-badge)
@@ -7,6 +9,13 @@
 ![Container Scan](https://github.com/Trojan3877/LoanDefaultRiskPredictor/actions/workflows/container-scan.yml/badge.svg?style=for-the-badge)
 ![Docs](https://img.shields.io/badge/Docs-GitHub%20Pages-informational?style=for-the-badge)
 ![Telemetry](https://img.shields.io/badge/Telemetry-OTEL-green?style=for-the-badge)
+
+> **LoanDefaultRiskPredictor** is a production-grade credit-risk pipeline that ingests raw loan-application data, engineers explainable features, hyper-tunes a **LightGBM** model with **Optuna**, and serves millisecond-level probability scores through a hardened **FastAPI** endpoint.  
+> Containerised with **Docker→Helm→Kubernetes**, scanned by **Trivy**, and signed with **Cosign**, the stack exports AUC/F1, latency, and cost metrics to **Prometheus + Grafana** while nightly snapshots land in **Snowflake** for regulatory audit.  
+> Quantifiable targets—*AUC ≥ 0.86 · F1 ≥ 0.54 · P95 latency < 25 ms · cost < $0.001/1k preds*—are enforced in CI and visualised on the live dashboard.
+
+![Architecture](docs/flowchart.png)
+
 ![Publish](https://github.com/Trojan3877/LoanDefaultRiskPredictor/actions/workflows/docker-publish.yml/badge.svg?style=for-the-badge)
 
 > **LoanDefaultRiskPredictor** is an end-to-end MLOps template that ingests tabular credit-risk data, engineers domain-specific features, trains a **LightGBM** gradient-boosting model, and serves real-time default-probability scores through a FastAPI endpoint.  
