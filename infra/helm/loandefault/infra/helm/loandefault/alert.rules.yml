@@ -1,0 +1,40 @@
+# LoanDefault SLA Alerts
+# ──────────────────────────────────────────────────────────
+# Import into Prometheus or include via Helm with
+#   --set-file 'prometheusRules.alerts=infra/helm/loandefault/alert.rules.yml'
+# ──────────────────────────────────────────────────────────
+groups:
+  - name: loan-default-sla
+    rules:
+      - alert: P95LatencyHigh
+        expr: histogram_quantile(0.95,
+               sum(rate(predict_latency_seconds_bucket[5m])) by (le)) * 1000 > 25
+        for: 10m
+        labels:
+          severity: page
+        annotations:
+          summary: "P95 latency >25 ms for 10 min"
+          description: |
+            LoanDefaultRiskPredictor FastAPI is exceeding its P95 latency SLA
+            (current value: {{ $value }} ms).
+
+      - alert: ModelAUCDrift
+        expr: avg_over_time(model_auc[30m]) < 0.82
+        for: 30m
+        labels:
+          severity: ticket
+        annotations:
+          summary: "Model AUC slipped below 0.82"
+          description: |
+            Online AUC has degraded below the acceptable threshold.
+            Investigate feature drift or retrain pipeline.
+
+      - alert: PredictionErrorRate
+        expr: rate(api_http_requests_total{status=~"5.."}[5m]) / rate(api_http_requests_total[5m]) > 0.05
+        for: 5m
+        labels:
+          severity: ticket
+        annotations:
+          summary: "≥5 % 5xx error rate"
+          description: |
+            Application is returning ≥5 % server errors over the last 5 minutes.
