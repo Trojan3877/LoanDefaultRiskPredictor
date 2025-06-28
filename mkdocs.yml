@@ -1,0 +1,39 @@
+site_name: Loan Default Risk Predictor
+site_url: https://trojan3877.github.io/LoanDefaultRiskPredictor/
+repo_name: Trojan3877/LoanDefaultRiskPredictor
+repo_url: https://github.com/Trojan3877/LoanDefaultRiskPredictor
+edit_uri: blob/main/
+
+theme:
+  name: material
+  palette:
+    scheme: slate
+  features:
+    - navigation.sections
+    - navigation.expand
+    - content.code.copy
+    - toc.follow
+
+nav:
+  - Overview: index.md
+  - Architecture: docs/architecture.md
+  - API Reference: docs/openapi.json
+  - Metrics Dashboard: docs/dashboard.png
+  - Changelog: CHANGELOG.md
+  - Contributing: CONTRIBUTING.md
+
+markdown_extensions:
+  - admonition
+  - footnotes
+  - toc:
+      permalink: true
+  - pymdownx.tabbed
+  - pymdownx.highlight
+  - pymdownx.superfences
+
+plugins:
+  - search
+  - mkdocs-git-revision-date-localized
+  - mike:
+      default_version: latest
+      default_branch: gh-pages
