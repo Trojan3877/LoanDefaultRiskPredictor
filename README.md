@@ -18,8 +18,7 @@
 
 ![Publish](https://github.com/Trojan3877/LoanDefaultRiskPredictor/actions/workflows/docker-publish.yml/badge.svg?style=for-the-badge)
 
-> **LoanDefaultRiskPredictor** is an end-to-end MLOps template that ingests tabular credit-risk data, engineers domain-specific features, trains a **LightGBM** gradient-boosting model, and serves real-time default-probability scores through a FastAPI endpoint.  
-> The stack is containerised with **Docker → Helm → Kubernetes**, metrics flow to **Prometheus + Grafana**, and nightly AUC/F1 results land in **Snowflake** for governance dashboards. Every image is scanned by **Trivy** and signed with **Cosign**, ensuring supply-chain security.
+> 
 
 ![image](https://github.com/user-attachments/assets/3338576e-a835-49c8-a67d-82538962af34)
 ![Architecture](docs/flowchart.png)
