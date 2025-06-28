@@ -1,0 +1,45 @@
+# ─────────────────────────────────────────────────────────────
+# LoanDefaultRiskPredictor • Helm values
+# Override any key with:  helm upgrade -f my_values.yaml …
+# ─────────────────────────────────────────────────────────────
+
+replicaCount: 2
+
+image:
+  repository: ghcr.io/trojan3877/loandefaultriskpredictor
+  tag: "0.1.0"
+  pullPolicy: IfNotPresent
+
+service:
+  type: ClusterIP
+  port: 8000
+
+resources:
+  requests:
+    cpu: 300m
+    memory: 512Mi
+  limits:
+    cpu: "1"
+    memory: 1Gi
+
+autoscaling:
+  enabled: true
+  minReplicas: 2
+  maxReplicas: 8
+  targetCPUUtilizationPercentage: 70
+
+env:
+  MODEL_PATH: "/models/latest.joblib"
+  OTEL_EXPORTER_OTLP_ENDPOINT: ""
+  SNOWFLAKE_ACCOUNT: ""
+  SNOWFLAKE_USER: ""
+  SNOWFLAKE_PASSWORD: ""
+  SNOWFLAKE_DATABASE: "ML_METRICS"
+  SNOWFLAKE_SCHEMA: "PUBLIC"
+
+ingress:
+  enabled: false
+  className: ""
+  annotations: {}
+  hosts: []
+  tls: []
