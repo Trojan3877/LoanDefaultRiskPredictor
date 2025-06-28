@@ -7,6 +7,7 @@
 ![Container Scan](https://github.com/Trojan3877/LoanDefaultRiskPredictor/actions/workflows/container-scan.yml/badge.svg?style=for-the-badge)
 ![Docs](https://img.shields.io/badge/Docs-GitHub%20Pages-informational?style=for-the-badge)
 ![Telemetry](https://img.shields.io/badge/Telemetry-OTEL-green?style=for-the-badge)
+![Publish](https://github.com/Trojan3877/LoanDefaultRiskPredictor/actions/workflows/docker-publish.yml/badge.svg?style=for-the-badge)
 
 > **LoanDefaultRiskPredictor** is an end-to-end MLOps template that ingests tabular credit-risk data, engineers domain-specific features, trains a **LightGBM** gradient-boosting model, and serves real-time default-probability scores through a FastAPI endpoint.  
 > The stack is containerised with **Docker → Helm → Kubernetes**, metrics flow to **Prometheus + Grafana**, and nightly AUC/F1 results land in **Snowflake** for governance dashboards. Every image is scanned by **Trivy** and signed with **Cosign**, ensuring supply-chain security.
