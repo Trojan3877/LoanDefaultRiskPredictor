@@ -1,0 +1,19 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: loan-risk-api
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: loan-risk
+  template:
+    metadata:
+      labels:
+        app: loan-risk
+    spec:
+      containers:
+        - name: api
+          image: loan-risk-api:latest
+          ports:
+            - containerPort: 8000
