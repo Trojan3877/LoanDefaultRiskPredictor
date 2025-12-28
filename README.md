@@ -8,23 +8,6 @@
 ![Helm](https://img.shields.io/badge/Deploy-Helm-0f1689)
 ![License](https://img.shields.io/badge/License-MIT-green)
 
-Absolutely — below is a full, L7-quality README.md tailored specifically to your LoanDefaultRiskPredictor project.
-
-This README is:
-
-✅ Honest (no inflated claims)
-
-✅ Recruiter-ready (Big Tech / Big AI / FinTech)
-
-✅ Systems-focused (not model-only)
-
-✅ Clear about governance, ethics, and tradeoffs
-
-✅ Ready to copy-paste as a single file
-
-
-
----
 
 🏦 Loan Default Risk Predictor
 
