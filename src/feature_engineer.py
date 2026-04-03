@@ -44,7 +44,18 @@ def _load_macro() -> pd.DataFrame:
     return macro.set_index("ym")
 
 
-MACRO_DF = _load_macro()
+_macro_df: pd.DataFrame | None = None
+
+
+def _get_macro() -> pd.DataFrame | None:
+    """Lazily load macro data; return None if file is absent."""
+    global _macro_df
+    if _macro_df is None:
+        try:
+            _macro_df = _load_macro()
+        except FileNotFoundError:
+            return None
+    return _macro_df
 
 
 # ── Helper: Weight-of-Evidence bucketing ────────────────────────────────────
@@ -75,7 +86,7 @@ class FeatureEngineer:
         # Fit one-hot encoder on low-cardinality cols
         self._ohe = OneHotEncoder(
             handle_unknown="ignore",
-            sparse=False,
+            sparse_output=False,
             dtype=np.int8,
         )
         self._ohe.fit(df[OHE_COLS])
@@ -110,9 +121,11 @@ class FeatureEngineer:
         out_df["loan_to_income"] = (out_df["loan_amnt"] / (out_df["annual_inc"] + 1)).astype("float32")
         out_df["dti_emp_inter"] = (df["dti"] * df["emp_length"]).astype("float32")
 
-        # 5. Macro join
-        out_df["issue_ym"] = pd.to_datetime(df["issue_d"]).dt.to_period("M")
-        out_df = out_df.join(MACRO_DF, on="issue_ym").drop(columns=["issue_ym"])
+        # 5. Macro join (optional – skipped when macro file is absent)
+        macro = _get_macro()
+        if macro is not None:
+            out_df["issue_ym"] = pd.to_datetime(df["issue_d"]).dt.to_period("M")
+            out_df = out_df.join(macro, on="issue_ym").drop(columns=["issue_ym"])
 
         return out_df.reset_index(drop=True)
 

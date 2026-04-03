@@ -2,9 +2,17 @@ fastapi
 uvicorn
 pandas
 scikit-learn
+numpy
 torch
 xgboost
+lightgbm
+optuna
 mlflow
 streamlit
+joblib
+boto3
+requests
+category_encoders
+prometheus_client
 pytest
 pytest-cov
