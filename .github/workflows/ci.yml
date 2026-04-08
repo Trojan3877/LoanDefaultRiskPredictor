@@ -1,23 +1,55 @@
-name: CI Pipeline
+name: Build-Test-Coverage
 
-on: [push, pull_request]
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
 
 jobs:
-  test:
+  ci:
     runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
 
-      - name: Set up Python
-        uses: actions/setup-python@v5
+    steps:
+      # 1 ▸ Checkout ---------------------------------------------------------
+      - name: 📥 Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      # 2 ▸ Setup Python -----------------------------------------------------
+      - name: 🐍 Setup Python 3.11
+        uses: actions/setup-python@v4
         with:
           python-version: "3.11"
 
-      - name: Install dependencies
+      # 3 ▸ Cache pip --------------------------------------------------------
+      - name: 📦 Cache pip
+        uses: actions/cache@v4
+        with:
+          path: ~/.cache/pip
+          key: ${{ runner.os }}-pip-${{ hashFiles('requirements.txt') }}
+          restore-keys: |
+            ${{ runner.os }}-pip-
+
+      # 4 ▸ Install dependencies --------------------------------------------
+      - name: ⚙️ Install Python deps
         run: |
           python -m pip install --upgrade pip
           pip install -r requirements.txt
 
-      - name: Run tests
+      # 5 ▸ Run tests + coverage --------------------------------------------
+      - name: 🧪 Pytest + Coverage
         run: |
-          pytest tests/ -v --tb=short
+          coverage run -m pytest -q
+          coverage xml -o coverage.xml
+          coverage report -m
+
+      # 6 ▸ Upload to Codecov -----------------------------------------------
+      - name: 📈 Upload coverage to Codecov
+        uses: codecov/codecov-action@v3
+        with:
+          token: ${{ secrets.CODECOV_TOKEN }}
+          files: coverage.xml
+          fail_ci_if_error: true
+          verbose: true

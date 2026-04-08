@@ -175,4 +175,9 @@ cython_debug/
 
 # Model artifacts and runtime outputs
 models/*.joblib
+models/*.pkl
+models/*.pt
+models/*.bin
 outputs/
+mlruns/
+mlartifacts/
