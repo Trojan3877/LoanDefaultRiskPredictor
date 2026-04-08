@@ -1,9 +1,0 @@
-replicaCount: 2
-
-image:
-  repository: loan-risk-api
-  tag: latest
-
-service:
-  type: ClusterIP
-  port: 80
