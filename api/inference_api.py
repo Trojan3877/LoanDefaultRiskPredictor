@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import time
+from collections.abc import Awaitable, Callable
 from typing import Annotated
 
 from fastapi import FastAPI, Request
@@ -41,7 +42,10 @@ class PredictionResponse(BaseModel):
 
 
 @app.middleware("http")
-async def observe(request: Request, call_next):
+async def observe(
+    request: Request,
+    call_next: Callable[[Request], Awaitable[Response]],
+) -> Response:
     started = time.perf_counter()
     response = await call_next(request)
     path = request.scope.get("route").path if request.scope.get("route") else request.url.path
