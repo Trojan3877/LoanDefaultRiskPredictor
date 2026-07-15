@@ -49,7 +49,7 @@ Run a reproducible benchmark:
 ```bash
 python -m venv .venv
 source .venv/bin/activate             # Windows: .venv\Scripts\activate
-python -m pip install -r requirements.txt
+python -m pip install -r requirements/dev.txt
 python -m src.train \
   --uri data/loans.csv \
   --trials 40 \
@@ -92,7 +92,7 @@ Interactive API documentation is available at `http://localhost:8000/docs`.
 |---:|---|---|
 | 1 | Reproducibility | Seeded split/tuning, package constraints, versioned metrics schema |
 | 2 | Data and model contracts | Required schema, dtype checks, strict API request model |
-| 3 | Test and quality gates | Compile, pytest, coverage, Compose and manifest validation in CI |
+| 3 | Test and quality gates | Ruff, mypy, Bandit, pytest/coverage, dependency audit, Compose and manifest validation in CI |
 | 4 | Container hygiene | Slim image, non-root UID/GID, no pip cache, health check |
 | 5 | Local orchestration | Compose health check, restart policy, read-only filesystem, pinned MLflow image |
 | 6 | Kubernetes runtime | Probes, requests/limits, rolling update, dropped capabilities, seccomp, no service-account token |
@@ -100,7 +100,7 @@ Interactive API documentation is available at `http://localhost:8000/docs`.
 | 8 | Observability | Health/readiness endpoints and Prometheus request/latency metrics |
 | 9 | Operational governance | Explicit model limitations, benchmark protocol, immutable-image guidance, rollback procedure |
 
-The controls are a deployable baseline, not proof of compliance. Cloud IAM, network policy, secrets management, encrypted storage, audit retention, fairness monitoring, and incident response must be implemented in the target environment.
+The measurable L6 definition, ownership model, gate evidence, and exception policy are documented in [`docs/L6_ENGINEERING_QUALITY.md`](docs/L6_ENGINEERING_QUALITY.md).\n\nThe controls are a deployable baseline, not proof of compliance. Cloud IAM, network policy, secrets management, encrypted storage, audit retention, fairness monitoring, and incident response must be implemented in the target environment.
 
 ## Deployment and rollback
 
@@ -109,7 +109,7 @@ Build and verify locally:
 ```bash
 docker build -t loan-risk-api:local .
 docker compose up --build
-kubectl apply --dry-run=client -f infra/k8s/
+docker run --rm -v "$PWD:/work" ghcr.io/yannh/kubeconform:v0.7.0 -strict -summary /work/infra/k8s
 ```
 
 Release images are published by semantic-version tags and signed in GitHub Actions. Before applying Kubernetes manifests, replace the example image tag with the released image digest. Use an immutable digest in production.
@@ -127,7 +127,9 @@ Release gates should include: passing CI, container scan, signature verification
 ```text
 api/                    FastAPI service and operational endpoints
 src/                    data loading, feature engineering, training
-tests/                  unit tests
+tests/                  unit and contract tests
+requirements/           separated runtime, training, and quality dependencies
+docs/                   L6 quality standard and operational evidence
 infra/k8s/              Kubernetes baseline
 .github/workflows/      CI, scanning, publishing and signing
 models/                 ignored runtime artifacts
