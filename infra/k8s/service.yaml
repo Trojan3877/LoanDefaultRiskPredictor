@@ -2,11 +2,14 @@ apiVersion: v1
 kind: Service
 metadata:
   name: loan-risk-service
+  labels:
+    app.kubernetes.io/name: loan-risk
 spec:
   selector:
-    app: loan-risk
+    app.kubernetes.io/name: loan-risk
   ports:
-    - protocol: TCP
+    - name: http
+      protocol: TCP
       port: 80
-      targetPort: 8000
+      targetPort: http
   type: ClusterIP
