@@ -1,72 +1,96 @@
-"""
-train.py
-──────────────────────────────────────────────────────────────────────────────
-End-to-end training script that
-
-1) Loads & cleans data via DataLoader
-2) Generates features with FeatureEngineer
-3) Hyper-parameter-tunes a LightGBM model (Optuna)
-4) Logs metrics & artifacts to MLflow and Snowflake
-5) Serialises the final model to `models/latest.joblib`
-
-Run:
-
-    python src/train.py --uri data/loans.csv --trials 50
-
-"""
-
+"""Train a LightGBM credit-risk model and write reproducible holdout metrics."""
 
 from __future__ import annotations
 
 import argparse
+import json
 import os
 import pathlib
+import platform
+import time
+from datetime import datetime, timezone
+
 import joblib
+import lightgbm as lgb
 import mlflow
 import optuna
 import pandas as pd
-import lightgbm as lgb
-from sklearn.metrics import roc_auc_score, f1_score
+import sklearn
+from sklearn.metrics import (
+    accuracy_score,
+    average_precision_score,
+    brier_score_loss,
+    confusion_matrix,
+    f1_score,
+    precision_score,
+    recall_score,
+    roc_auc_score,
+)
 from sklearn.model_selection import train_test_split
 
-from data_loader import DataLoader
-from feature_engineer import FeatureEngineer
+try:
+    from src.data_loader import DataLoader
+    from src.feature_engineer import FeatureEngineer
+except ModuleNotFoundError:
+    from data_loader import DataLoader
+    from feature_engineer import FeatureEngineer
 
 
 def _parse_args() -> argparse.Namespace:
-    ap = argparse.ArgumentParser()
-    ap.add_argument("--uri", required=True, help="CSV/Parquet path, S3 or HTTP URI")
-    ap.add_argument("--trials", type=int, default=40, help="Optuna trials")
-    ap.add_argument("--output", default="models/latest.joblib", help="Model out-path")
-    return ap.parse_args()
+    parser = argparse.ArgumentParser()
+    parser.add_argument("--uri", required=True, help="CSV/Parquet path, S3 or HTTP URI")
+    parser.add_argument("--trials", type=int, default=40)
+    parser.add_argument("--output", default="models/latest.joblib")
+    parser.add_argument("--metrics-output", default="outputs/metrics.json")
+    parser.add_argument("--test-size", type=float, default=0.2)
+    parser.add_argument("--seed", type=int, default=2025)
+    parser.add_argument("--threshold", type=float, default=0.5)
+    return parser.parse_args()
+
+
+def _metrics(y_true, probabilities, threshold: float) -> dict:
+    labels = probabilities >= threshold
+    tn, fp, fn, tp = confusion_matrix(y_true, labels, labels=[0, 1]).ravel()
+    return {
+        "roc_auc": float(roc_auc_score(y_true, probabilities)),
+        "pr_auc": float(average_precision_score(y_true, probabilities)),
+        "accuracy": float(accuracy_score(y_true, labels)),
+        "precision": float(precision_score(y_true, labels, zero_division=0)),
+        "recall": float(recall_score(y_true, labels, zero_division=0)),
+        "f1": float(f1_score(y_true, labels, zero_division=0)),
+        "brier_score": float(brier_score_loss(y_true, probabilities)),
+        "threshold": threshold,
+        "confusion_matrix": {"tn": int(tn), "fp": int(fp), "fn": int(fn), "tp": int(tp)},
+    }
 
 
 def main() -> None:
     args = _parse_args()
+    started = time.perf_counter()
 
-    # ---------------------------------------------------------------------------#
-    # 2 ─ Data loading & feature engineering                                     #
-    # ---------------------------------------------------------------------------#
-    loader = DataLoader.from_uri(args.uri)
-    df_full = pd.concat(loader.iter_chunks(50_000), ignore_index=True)
-    y_full = df_full.pop("defaulted")
-
-    fe = FeatureEngineer().fit(df_full, y_full)
-    X_full = fe.transform(df_full)
-
-    X_train, X_val, y_train, y_val = train_test_split(
-        X_full, y_full, test_size=0.2, stratify=y_full, random_state=2025
+    df = pd.concat(DataLoader.from_uri(args.uri).iter_chunks(50_000), ignore_index=True)
+    y = df.pop("defaulted")
+    X_train_raw, X_test_raw, y_train, y_test = train_test_split(
+        df,
+        y,
+        test_size=args.test_size,
+        stratify=y,
+        random_state=args.seed,
     )
 
-    # ---------------------------------------------------------------------------#
-    # 3 ─ Optuna objective                                                       #
-    # ---------------------------------------------------------------------------#
+    # Fit every target-aware transform on training data only.
+    features = FeatureEngineer().fit(X_train_raw, y_train)
+    X_train = features.transform(X_train_raw)
+    X_test = features.transform(X_test_raw)
+
     def objective(trial: optuna.Trial) -> float:
         params = {
             "objective": "binary",
-            "boosting_type": "gbdt",
             "metric": "auc",
             "verbosity": -1,
+            "seed": args.seed,
+            "feature_fraction_seed": args.seed,
+            "bagging_seed": args.seed,
             "learning_rate": trial.suggest_float("learning_rate", 0.01, 0.3, log=True),
             "num_leaves": trial.suggest_int("num_leaves", 16, 256, log=True),
             "feature_fraction": trial.suggest_float("feature_fraction", 0.6, 1.0),
@@ -74,83 +98,69 @@ def main() -> None:
             "bagging_freq": trial.suggest_int("bagging_freq", 1, 10),
             "min_data_in_leaf": trial.suggest_int("min_data_in_leaf", 20, 100),
         }
-
-        lgb_train = lgb.Dataset(X_train, y_train)
-        lgb_val = lgb.Dataset(X_val, y_val, reference=lgb_train)
-
+        inner_train, inner_valid, inner_y_train, inner_y_valid = train_test_split(
+            X_train, y_train, test_size=0.2, stratify=y_train, random_state=args.seed
+        )
         model = lgb.train(
             params,
-            lgb_train,
+            lgb.Dataset(inner_train, inner_y_train),
             num_boost_round=2000,
-            valid_sets=[lgb_val],
-            # early_stopping raises EarlyStopException; log_evaluation(0) keeps output silent
-            callbacks=[lgb.early_stopping(100), lgb.log_evaluation(0)],
+            valid_sets=[lgb.Dataset(inner_valid, inner_y_valid)],
+            callbacks=[lgb.early_stopping(100, verbose=False), lgb.log_evaluation(0)],
         )
+        trial.set_user_attr("best_iteration", model.best_iteration)
+        return roc_auc_score(inner_y_valid, model.predict(inner_valid, num_iteration=model.best_iteration))
 
-        preds = model.predict(X_val, num_iteration=model.best_iteration)
-        return roc_auc_score(y_val, preds)
+    study = optuna.create_study(direction="maximize", sampler=optuna.samplers.TPESampler(seed=args.seed))
+    study.optimize(objective, n_trials=args.trials)
 
-    study = optuna.create_study(direction="maximize")
-    study.optimize(objective, n_trials=args.trials, show_progress_bar=True)
-    best_params = study.best_trial.params
+    params = {
+        **study.best_trial.params,
+        "objective": "binary",
+        "metric": "auc",
+        "verbosity": -1,
+        "seed": args.seed,
+    }
+    rounds = int(study.best_trial.user_attrs.get("best_iteration", 500))
+    model = lgb.train(params, lgb.Dataset(X_train, y_train), num_boost_round=rounds)
+    probabilities = model.predict(X_test)
+    results = _metrics(y_test, probabilities, args.threshold)
+    record = {
+        "schema_version": 1,
+        "created_at": datetime.now(timezone.utc).isoformat(),
+        "evaluation": "single stratified holdout; untouched during tuning",
+        "dataset": {"uri": args.uri, "rows": len(df), "train_rows": len(X_train), "test_rows": len(X_test)},
+        "protocol": {"seed": args.seed, "test_size": args.test_size, "trials": args.trials},
+        "environment": {
+            "python": platform.python_version(),
+            "pandas": pd.__version__,
+            "scikit_learn": sklearn.__version__,
+            "lightgbm": lgb.__version__,
+        },
+        "metrics": results,
+        "best_params": study.best_trial.params,
+        "best_iteration": rounds,
+        "training_seconds": round(time.perf_counter() - started, 3),
+    }
 
-    # ---------------------------------------------------------------------------#
-    # 4 ─ Train final model                                                      #
-    # ---------------------------------------------------------------------------#
-    best_params.update({"objective": "binary", "metric": "auc", "verbosity": -1})
-    final_train = lgb.Dataset(X_full, y_full)
-    model = lgb.train(
-        best_params,
-        final_train,
-        num_boost_round=study.best_trial.user_attrs.get("n_boost_round", 500),
-    )
+    output = pathlib.Path(args.output)
+    output.parent.mkdir(parents=True, exist_ok=True)
+    joblib.dump({"model": model, "feature_engineer": features, "threshold": args.threshold}, output)
 
-    preds_full = model.predict(X_full)
-    auc_full = roc_auc_score(y_full, preds_full)
-    f1_full = f1_score(y_full, preds_full > 0.5)
+    metrics_output = pathlib.Path(args.metrics_output)
+    metrics_output.parent.mkdir(parents=True, exist_ok=True)
+    metrics_output.write_text(json.dumps(record, indent=2) + "\n", encoding="utf-8")
 
-    print(f"✅ Final AUC  {auc_full:.3f}  •  F1  {f1_full:.3f}")
-
-    # ---------------------------------------------------------------------------#
-    # 5 ─ Log to MLflow & Snowflake                                              #
-    # ---------------------------------------------------------------------------#
     mlflow.set_experiment("LoanDefaultRisk")
     with mlflow.start_run():
-        mlflow.log_params(best_params)
-        mlflow.log_metric("auc", auc_full)
-        mlflow.log_metric("f1", f1_full)
+        mlflow.log_params(study.best_trial.params)
+        mlflow.log_metrics({key: value for key, value in results.items() if isinstance(value, float)})
+        mlflow.log_artifact(str(metrics_output))
         mlflow.lightgbm.log_model(model, "model")
-        mlflow.log_artifact(args.output)
 
-    # Snowflake (placeholder)
-    try:
-        import snowflake.connector
-
-        conn = snowflake.connector.connect(
-            account=os.getenv("SNOWFLAKE_ACCOUNT"),
-            user=os.getenv("SNOWFLAKE_USER"),
-            password=os.getenv("SNOWFLAKE_PASSWORD"),
-            database="ML_METRICS",
-            schema="PUBLIC",
-        )
-        cur = conn.cursor()
-        cur.execute(
-            "INSERT INTO LOAN_MODEL_METRICS(VERSION, AUC, F1) VALUES (%s, %s, %s)",
-            ("v0.1.0", auc_full, f1_full),
-        )
-        cur.close()
-        conn.close()
-    except Exception as e:
-        print("Snowflake logging skipped:", e)
-
-    # ---------------------------------------------------------------------------#
-    # 6 ─ Persist artefacts                                                      #
-    # ---------------------------------------------------------------------------#
-    pathlib.Path(args.output).parent.mkdir(parents=True, exist_ok=True)
-    joblib.dump({"model": model, "feature_engineer": fe}, args.output)
-    print(f"Model saved → {args.output}")
+    print(json.dumps(record, indent=2))
+    print(f"Model saved to {output}; metrics saved to {metrics_output}")
 
 
 if __name__ == "__main__":
     main()
-
