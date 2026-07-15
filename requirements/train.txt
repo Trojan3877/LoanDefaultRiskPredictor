@@ -1,0 +1,14 @@
+-r runtime.txt
+pandas>=2.3,<2.4
+scikit-learn>=1.9,<1.10
+numpy>=2.4,<2.5
+torch>=2.13,<2.14
+xgboost>=3.2,<3.3
+lightgbm>=4.6,<4.7
+optuna>=4.9,<4.10
+mlflow>=3.14,<3.15
+streamlit>=1.59,<1.60
+joblib>=1.5,<1.6
+boto3>=1.43,<1.44
+requests>=2.34,<2.35
+category-encoders>=2.9,<2.10
