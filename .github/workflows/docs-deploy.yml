@@ -7,6 +7,12 @@ on:
       - "docs/**"
       - "mkdocs.yml"
       - ".github/workflows/docs-deploy.yml"
+  pull_request:
+    branches: [main]
+    paths:
+      - "docs/**"
+      - "mkdocs.yml"
+      - ".github/workflows/docs-deploy.yml"
   workflow_dispatch:
 
 permissions:
@@ -35,6 +41,7 @@ jobs:
       - name: Validate documentation
         run: mkdocs build --strict
       - name: Publish latest documentation
+        if: github.event_name == 'push'
         env:
           GIT_AUTHOR_NAME: github-actions[bot]
           GIT_AUTHOR_EMAIL: 41898282+github-actions[bot]@users.noreply.github.com
