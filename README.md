@@ -1,9 +1,21 @@
 # Loan Default Risk Predictor
+[![L6 Engineering Quality](https://github.com/CoreyLeath-code/LoanDefaultRiskPredictor/actions/workflows/ci.yml/badge.svg?branch=main)](https://github.com/CoreyLeath-code/LoanDefaultRiskPredictor/actions/workflows/ci.yml)
+[![Docs Deploy](https://github.com/CoreyLeath-code/LoanDefaultRiskPredictor/actions/workflows/docs-deploy.yml/badge.svg?branch=main)](https://github.com/CoreyLeath-code/LoanDefaultRiskPredictor/actions/workflows/docs-deploy.yml)
+[![Container Security](https://github.com/CoreyLeath-code/LoanDefaultRiskPredictor/actions/workflows/container-scan.yml/badge.svg?branch=main)](https://github.com/CoreyLeath-code/LoanDefaultRiskPredictor/actions/workflows/container-scan.yml)
+[![Docker Publish](https://github.com/CoreyLeath-code/LoanDefaultRiskPredictor/actions/workflows/docker-publish.yml/badge.svg)](https://github.com/CoreyLeath-code/LoanDefaultRiskPredictor/actions/workflows/docker-publish.yml)
+![Engineering Quality](https://img.shields.io/badge/Engineering%20Quality-L6-7c3aed)
+![Deployment Hygiene](https://img.shields.io/badge/Deployment%20Hygiene-9%2F9-16a34a)
+![Python](https://img.shields.io/badge/Python-3.11%20%7C%203.12-3776ab?logo=python&logoColor=white)
+![FastAPI](https://img.shields.io/badge/FastAPI-Validated%20API-009688?logo=fastapi&logoColor=white)
+![LightGBM](https://img.shields.io/badge/LightGBM-Credit%20Risk-2f855a)
+![Docker](https://img.shields.io/badge/Docker-Hardened-2496ed?logo=docker&logoColor=white)
+![Kubernetes](https://img.shields.io/badge/Kubernetes-Validated-326ce5?logo=kubernetes&logoColor=white)
+![Prometheus](https://img.shields.io/badge/Prometheus-Observed-e6522c?logo=prometheus&logoColor=white)
+![SBOM](https://img.shields.io/badge/SBOM-SPDX-blue)
+![Supply Chain](https://img.shields.io/badge/Supply%20Chain-Cosign%20Signed-6f42c1)
+![Security](https://img.shields.io/badge/Security-Trivy%20%7C%20Bandit-brightgreen)
+![License](https://img.shields.io/badge/License-MIT-green)
 
-[![CI](https://github.com/CoreyLeath-code/LoanDefaultRiskPredictor/actions/workflows/ci.yml/badge.svg)](https://github.com/CoreyLeath-code/LoanDefaultRiskPredictor/actions/workflows/ci.yml)
-[![Container scan](https://github.com/CoreyLeath-code/LoanDefaultRiskPredictor/actions/workflows/container-scan.yml/badge.svg)](https://github.com/CoreyLeath-code/LoanDefaultRiskPredictor/actions/workflows/container-scan.yml)
-![Python](https://img.shields.io/badge/Python-3.11-blue)
-![License](https://img.shields.io/badge/license-MIT-green)
 
 A research-oriented credit-risk classification pipeline built with pandas, LightGBM, Optuna, MLflow, FastAPI, Docker, and Kubernetes.
 
