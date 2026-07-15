@@ -1,4 +1,4 @@
-name: Build-Test-Deploy-Validate
+name: L6-Engineering-Quality
 
 on:
   push:
@@ -11,28 +11,37 @@ permissions:
   contents: read
 
 concurrency:
-  group: ci-${{ github.ref }}
+  group: ci-${{ github.workflow }}-${{ github.ref }}
   cancel-in-progress: true
 
 jobs:
   test:
     runs-on: ubuntu-latest
-    timeout-minutes: 20
+    timeout-minutes: 25
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
         with:
           python-version: "3.11"
           cache: pip
-      - name: Install dependencies
+          cache-dependency-path: requirements/dev.txt
+      - name: Install development dependencies
         run: |
           python -m pip install --upgrade pip
-          pip install -r requirements.txt
+          python -m pip install --requirement requirements/dev.txt
+      - name: Static quality gates
+        run: |
+          ruff check api src tests --select E9,F63,F7,F82
+          mypy api --ignore-missing-imports
+          bandit -q -r api src -x tests
       - name: Compile and test
         run: |
           python -m compileall -q api src tests
-          pytest --cov --cov-report=term-missing --cov-report=xml
+          pytest --cov --cov-report=term-missing --cov-report=xml --cov-fail-under=45
+      - name: Audit runtime dependencies
+        run: pip-audit --requirement requirements/runtime.txt
       - name: Upload coverage
+        if: always()
         uses: codecov/codecov-action@v4
         continue-on-error: true
         with:
@@ -40,16 +49,26 @@ jobs:
 
   deployment-hygiene:
     runs-on: ubuntu-latest
-    timeout-minutes: 20
+    timeout-minutes: 15
     steps:
       - uses: actions/checkout@v4
-      - name: Build container
+      - name: Build minimal container
         run: docker build --tag loan-risk-api:ci .
-      - name: Inspect non-root runtime
-        run: test "$(docker image inspect loan-risk-api:ci --format '{{.Config.User}}')" = "10001:10001"
+      - name: Inspect runtime security contract
+        run: |
+          test "$(docker image inspect loan-risk-api:ci --format '{{.Config.User}}')" = "10001:10001"
+          test "$(docker image inspect loan-risk-api:ci --format '{{json .Config.Healthcheck}}')" != "null"
+      - name: Smoke test container
+        run: |
+          docker run --detach --rm --name loan-risk-ci --publish 8000:8000 loan-risk-api:ci
+          for attempt in {1..30}; do
+            if curl --fail --silent http://127.0.0.1:8000/readyz; then exit 0; fi
+            sleep 1
+          done
+          docker logs loan-risk-ci
+          exit 1
       - name: Validate Compose
         run: docker compose config --quiet
-      - name: Validate Kubernetes manifests
+      - name: Validate Kubernetes manifests offline
         run: |
-          kubectl apply --dry-run=client -f infra/k8s/deployment.yaml
-          kubectl apply --dry-run=client -f infra/k8s/service.yaml
+          docker run --rm -v "$PWD:/work" ghcr.io/yannh/kubeconform:v0.7.0             -strict -summary -kubernetes-version 1.31.0 /work/infra/k8s
