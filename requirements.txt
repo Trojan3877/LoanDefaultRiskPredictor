@@ -1,18 +1,3 @@
-fastapi
-uvicorn
-pandas
-scikit-learn
-numpy
-torch
-xgboost
-lightgbm
-optuna
-mlflow
-streamlit
-joblib
-boto3
-requests
-category_encoders
-prometheus_client
-pytest
-pytest-cov
+# Backward-compatible development install.
+# Production images install requirements/runtime.txt only.
+-r requirements/dev.txt

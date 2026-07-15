@@ -1,0 +1,7 @@
+# Default ownership for engineering and governance changes
+* @CoreyLeath-code
+/.github/ @CoreyLeath-code
+/infra/ @CoreyLeath-code
+/api/ @CoreyLeath-code
+/src/ @CoreyLeath-code
+/SECURITY.md @CoreyLeath-code
