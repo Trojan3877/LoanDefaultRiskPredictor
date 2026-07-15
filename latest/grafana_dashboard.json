@@ -1,0 +1,49 @@
+{
+  "id": null,
+  "title": "Loan Default Risk Predictor – SLA Dashboard",
+  "timezone": "browser",
+  "schemaVersion": 36,
+  "version": 1,
+  "refresh": "30s",
+  "panels": [
+    {
+      "type": "stat",
+      "title": "❖ AUC (rolling 1 h)",
+      "datasource": "Prometheus",
+      "targets": [
+        { "expr": "avg_over_time(model_auc[1h])", "legendFormat": "AUC" }
+      ],
+      "gridPos": { "x": 0, "y": 0, "w": 4, "h": 4 }
+    },
+    {
+      "type": "stat",
+      "title": "❖ F1 Score (rolling 1 h)",
+      "datasource": "Prometheus",
+      "targets": [
+        { "expr": "avg_over_time(model_f1[1h])", "legendFormat": "F1" }
+      ],
+      "gridPos": { "x": 4, "y": 0, "w": 4, "h": 4 }
+    },
+    {
+      "type": "stat",
+      "title": "P95 Latency (ms)",
+      "datasource": "Prometheus",
+      "targets": [
+        {
+          "expr": "histogram_quantile(0.95, sum(rate(predict_latency_seconds_bucket[5m])) by (le)) * 1000",
+          "legendFormat": "P95"
+        }
+      ],
+      "gridPos": { "x": 8, "y": 0, "w": 4, "h": 4 }
+    },
+    {
+      "type": "graph",
+      "title": "Predictions per Second",
+      "datasource": "Prometheus",
+      "targets": [
+        { "expr": "rate(predictions_total[1m])", "legendFormat": "RPS" }
+      ],
+      "gridPos": { "x": 0, "y": 4, "w": 12, "h": 6 }
+    }
+  ]
+}
