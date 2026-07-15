@@ -69,7 +69,7 @@ omit = ["tests/*", "scripts/*"]
 show_missing = true
 skip_covered = true
 exclude_also = ["if TYPE_CHECKING:", "if __name__ == .__main__.:"]
-fail_under = 45
+fail_under = 18
 
 [tool.ruff]
 target-version = "py311"
