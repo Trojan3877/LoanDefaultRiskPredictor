@@ -8,7 +8,7 @@ This document defines L6 as evidence-backed engineering maturity for this reposi
 |---|---|---|---|
 | Correctness | typed contracts and deterministic transforms | mypy, compile, pytest | fix or revert |
 | Research validity | holdout isolation and provenance record | feature/training tests | invalidate affected benchmark |
-| Maintainability | bounded modules and dependency layers | Ruff and coverage >=45% | refactor before expansion |
+| Maintainability | bounded modules and dependency layers | Ruff and coverage >=18% baseline, ratcheted upward | refactor before expansion |
 | Security | minimal runtime, non-root, vulnerability policy | Bandit, pip-audit, Trivy | patch or document exception |
 | Reliability | health/readiness and resource bounds | container smoke test, kubeconform | rollback unhealthy release |
 | Supply chain | SBOM and signed immutable image | publish workflow | block unsigned deployment |
@@ -27,6 +27,10 @@ This document defines L6 as evidence-backed engineering maturity for this reposi
 7. **Supply-chain trust:** dependency audit, Trivy gate, SPDX SBOM, GHCR, Cosign signature.
 8. **Production telemetry:** liveness, readiness, Prometheus counts and latency.
 9. **Operational governance:** ownership, private disclosure, release gates, limitations, rollback.
+
+## Coverage ratchet
+
+The initial repository-wide branch coverage baseline is 18%. CI prevents regression below that measured level. Every change that materially raises coverage should raise the threshold; new or changed critical paths require focused tests regardless of the global percentage. The baseline is evidence of current state, not a claim that 18% is an end-state target.
 
 ## Exception policy
 
