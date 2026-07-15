@@ -34,6 +34,7 @@ plugins:
   - search
   - git-revision-date-localized:
       enable_creation_date: true
-  - mike:
-      default_version: latest
-      default_branch: gh-pages
+
+extra:
+  version:
+    provider: mike
