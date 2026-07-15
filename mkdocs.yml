@@ -1,8 +1,9 @@
 site_name: Loan Default Risk Predictor
-site_url: https://trojan3877.github.io/LoanDefaultRiskPredictor/
-repo_name: Trojan3877/LoanDefaultRiskPredictor
-repo_url: https://github.com/Trojan3877/LoanDefaultRiskPredictor
-edit_uri: blob/main/
+site_description: Research-oriented credit-risk pipeline and L6 deployment baseline
+site_url: https://coreyleath-code.github.io/LoanDefaultRiskPredictor/
+repo_name: CoreyLeath-code/LoanDefaultRiskPredictor
+repo_url: https://github.com/CoreyLeath-code/LoanDefaultRiskPredictor
+edit_uri: edit/main/docs/
 
 theme:
   name: material
@@ -16,24 +17,23 @@ theme:
 
 nav:
   - Overview: index.md
-  - Architecture: docs/architecture.md
-  - API Reference: docs/openapi.json
-  - Metrics Dashboard: docs/dashboard.png
-  - Changelog: CHANGELOG.md
-  - Contributing: CONTRIBUTING.md
+  - Architecture: architecture.md
+  - L6 Engineering Quality: L6_ENGINEERING_QUALITY.md
 
 markdown_extensions:
   - admonition
   - footnotes
   - toc:
       permalink: true
-  - pymdownx.tabbed
+  - pymdownx.tabbed:
+      alternate_style: true
   - pymdownx.highlight
   - pymdownx.superfences
 
 plugins:
   - search
-  - mkdocs-git-revision-date-localized
+  - git-revision-date-localized:
+      enable_creation_date: true
   - mike:
       default_version: latest
       default_branch: gh-pages
