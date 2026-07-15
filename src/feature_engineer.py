@@ -1,153 +1,92 @@
-"""
-feature_engineer.py
-──────────────────────────────────────────────────────────────────────────────
-Transforms raw loan-application data into machine-learning–ready features.
-
-Pipeline Stages
-───────────────
-1. Categorical Encoding
-   • High-cardinality code via *Target (Mean) Encoding*
-   • Low-cardinality via *One-Hot* (keeps model transparent)
-
-2. Continuous Feature Engineering
-   • Weight-of-Evidence (WOE) bucketing for monotonic credit-risk variables
-   • Interaction terms (loan_amt / annual_inc, dti × emp_length)
-
-3. Macro-economic Join (optional)
-   • Adds Fed Funds Rate + Unemployment Rate for loan issue date
-
-Returns a **pandas.DataFrame** ready for `train.py`.  
-All steps are pure-python, stateless; suitable for both **fit** & **serve**.
-"""
+"""Leakage-safe feature engineering fitted once and reused for inference."""
 
 from __future__ import annotations
 
-import datetime as dt
-from typing import Dict, Iterable
+from pathlib import Path
 
 import numpy as np
 import pandas as pd
 from category_encoders.target_encoder import TargetEncoder
 from sklearn.preprocessing import OneHotEncoder
 
-# ── Configuration constants ────────────────────────────────────────────────
 OHE_COLS = ["term", "home_ownership", "purpose"]
 TARGET_ENC_COLS = ["emp_length"]
-WOE_COLS = ["dti", "revol_util"]  # monotonic w.r.t default
-MACRO_FILE = "data/macro.csv"
+BINNED_COLS = ["dti", "revol_util"]
+MACRO_FILE = Path("data/macro.csv")
 
 
-def _load_macro() -> pd.DataFrame:
-    """Load Fed rate + unemployment CSV, indexed by YYYY-MM."""
-    macro = pd.read_csv(MACRO_FILE, parse_dates=["date"])
-    macro["ym"] = macro["date"].dt.to_period("M")
-    return macro.set_index("ym")
-
-
-_macro_df: pd.DataFrame | None = None
-
-
-def _get_macro() -> pd.DataFrame | None:
-    """Lazily load macro data; return None if file is absent."""
-    global _macro_df
-    if _macro_df is None:
-        try:
-            _macro_df = _load_macro()
-        except FileNotFoundError:
-            return None
-    return _macro_df
-
-
-# ── Helper: Weight-of-Evidence bucketing ────────────────────────────────────
-def _woe_bucket(series: pd.Series, bins: int = 10) -> pd.Series:
-    """Return WOE-transformed series given a numeric predictor."""
-    cats = pd.qcut(series, q=bins, duplicates="drop")
-    # Will be replaced later during fit with proper WOE using y; for now raw bin idx
-    return cats.cat.codes.astype("int8")
-
-
-# ── Main class ──────────────────────────────────────────────────────────────
 class FeatureEngineer:
-    """Fit-transform interface mirrors scikit-learn style."""
+    """Fit deterministic encoders and numeric bin boundaries on training data only."""
 
-    def __init__(self):
-        self._target_encoders: Dict[str, TargetEncoder] = {}
+    def __init__(self, bins: int = 10) -> None:
+        self._bins = bins
+        self._target_encoders: dict[str, TargetEncoder] = {}
+        self._bin_edges: dict[str, np.ndarray] = {}
         self._ohe: OneHotEncoder | None = None
+        self._macro: pd.DataFrame | None = None
         self._fitted = False
 
-    # ── Fit stage -----------------------------------------------------------
-    def fit(self, df: pd.DataFrame, y: pd.Series):
-        # Fit target encoders
+    def fit(self, df: pd.DataFrame, y: pd.Series) -> "FeatureEngineer":
         for col in TARGET_ENC_COLS:
-            enc = TargetEncoder(cols=[col], smoothing=0.25)
-            enc.fit(df[col], y)
-            self._target_encoders[col] = enc
+            encoder = TargetEncoder(cols=[col], smoothing=0.25)
+            encoder.fit(df[[col]], y)
+            self._target_encoders[col] = encoder
 
-        # Fit one-hot encoder on low-cardinality cols
-        self._ohe = OneHotEncoder(
-            handle_unknown="ignore",
-            sparse_output=False,
-            dtype=np.int8,
-        )
+        self._ohe = OneHotEncoder(handle_unknown="ignore", sparse_output=False, dtype=np.int8)
         self._ohe.fit(df[OHE_COLS])
+
+        for col in BINNED_COLS:
+            quantiles = np.linspace(0.0, 1.0, self._bins + 1)
+            edges = np.unique(df[col].quantile(quantiles).to_numpy(dtype=float))
+            if len(edges) < 2:
+                edges = np.array([-np.inf, np.inf])
+            else:
+                edges[0], edges[-1] = -np.inf, np.inf
+            self._bin_edges[col] = edges
+
+        if MACRO_FILE.exists() and "issue_d" in df.columns:
+            macro = pd.read_csv(MACRO_FILE, parse_dates=["date"])
+            macro["issue_ym"] = macro["date"].dt.to_period("M")
+            self._macro = macro.drop(columns=["date"]).set_index("issue_ym")
 
         self._fitted = True
         return self
 
-    # ── Transform stage -----------------------------------------------------
     def transform(self, df: pd.DataFrame) -> pd.DataFrame:
-        if not self._fitted:
-            raise RuntimeError("FeatureEngineer must be fit() before transform().")
+        if not self._fitted or self._ohe is None:
+            raise RuntimeError("FeatureEngineer must be fitted before transform")
 
-        out_df = df.copy()
+        output = df.copy()
 
-        # 1. Target encoding
-        for col, enc in self._target_encoders.items():
-            out_df[f"{col}_te"] = enc.transform(out_df[col]).astype("float32")
-            out_df.drop(columns=[col], inplace=True)
+        for col, encoder in self._target_encoders.items():
+            encoded = encoder.transform(output[[col]])
+            output[f"{col}_te"] = encoded[col].astype("float32")
+            output.drop(columns=[col], inplace=True)
 
-        # 2. One-Hot encode
-        ohe_arr = self._ohe.transform(out_df[OHE_COLS])
-        ohe_cols = self._ohe.get_feature_names_out(OHE_COLS)
-        out_df[ohe_cols] = ohe_arr.astype("int8")
-        out_df.drop(columns=OHE_COLS, inplace=True)
+        encoded_ohe = self._ohe.transform(output[OHE_COLS])
+        output[self._ohe.get_feature_names_out(OHE_COLS)] = encoded_ohe.astype("int8")
+        output.drop(columns=OHE_COLS, inplace=True)
 
-        # 3. WOE bucketing
-        for col in WOE_COLS:
-            out_df[f"{col}_woe"] = _woe_bucket(out_df[col])
-            out_df.drop(columns=[col], inplace=True)
+        for col, edges in self._bin_edges.items():
+            output[f"{col}_bin"] = pd.cut(
+                output[col], bins=edges, labels=False, include_lowest=True
+            ).astype("int8")
+            output.drop(columns=[col], inplace=True)
 
-        # 4. Interaction terms
-        out_df["loan_to_income"] = (out_df["loan_amnt"] / (out_df["annual_inc"] + 1)).astype("float32")
-        out_df["dti_emp_inter"] = (df["dti"] * df["emp_length"]).astype("float32")
+        output["loan_to_income"] = (
+            output["loan_amnt"] / output["annual_inc"].clip(lower=1.0)
+        ).astype("float32")
+        output["dti_emp_inter"] = (df["dti"] * df["emp_length"]).astype("float32")
 
-        # 5. Macro join (optional – skipped when macro file is absent)
-        macro = _get_macro()
-        if macro is not None:
-            out_df["issue_ym"] = pd.to_datetime(df["issue_d"]).dt.to_period("M")
-            out_df = out_df.join(macro, on="issue_ym").drop(columns=["issue_ym"])
+        # Identifiers must never become predictive inputs.
+        output.drop(columns=["loan_id"], errors="ignore", inplace=True)
 
-        return out_df.reset_index(drop=True)
+        if self._macro is not None and "issue_d" in df.columns:
+            issue_ym = pd.to_datetime(df["issue_d"]).dt.to_period("M")
+            output = output.assign(issue_ym=issue_ym).join(self._macro, on="issue_ym")
+            output.drop(columns=["issue_ym"], inplace=True)
 
-    # Convenience combined method
+        return output.reset_index(drop=True)
+
     def fit_transform(self, df: pd.DataFrame, y: pd.Series) -> pd.DataFrame:
         return self.fit(df, y).transform(df)
-
-
-# ── CLI utility for exploration ────────────────────────────────────────────
-if __name__ == "__main__":
-    import argparse
-
-    from data_loader import DataLoader
-
-    ap = argparse.ArgumentParser()
-    ap.add_argument("--uri", required=True, help="CSV/Parquet path or S3/HTTP URI")
-    args = ap.parse_args()
-
-    dl = DataLoader.from_uri(args.uri)
-    df = next(iter(dl))  # small sample
-    y = df.pop("defaulted")
-    fe = FeatureEngineer().fit(df, y)
-
-    sample = fe.transform(df.head())
-    print(sample.head())
