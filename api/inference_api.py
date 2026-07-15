@@ -48,7 +48,8 @@ async def observe(
 ) -> Response:
     started = time.perf_counter()
     response = await call_next(request)
-    path = request.scope.get("route").path if request.scope.get("route") else request.url.path
+    route = request.scope.get("route")
+    path = getattr(route, "path", request.url.path)
     REQUESTS.labels(request.method, path, response.status_code).inc()
     LATENCY.labels(request.method, path).observe(time.perf_counter() - started)
     return response
