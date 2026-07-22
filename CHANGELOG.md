@@ -1,4 +1,12 @@
 # Changelog
+
+## Unreleased
+
+- Connected one model-backed training, artifact, and FastAPI serving contract.
+- Added checksum verification, production fail-closed readiness, service controls, feedback, and model-aware telemetry.
+- Added temporal-preferred evaluation, logistic baseline, calibration metrics, uncertainty, and group-slice utilities.
+- Raised critical-path coverage from 18% to a 75% CI floor and added Python 3.11/3.12 plus container smoke inference.
+- Replaced stale duplicate APIs, demos, transformer scaffolding, and unsupported maturity claims with L5 evidence and honest production gates.
 All notable changes to **LoanDefaultRiskPredictor** will be documented here.
 
 This project follows **Semantic Versioning 2.0.0** and the  

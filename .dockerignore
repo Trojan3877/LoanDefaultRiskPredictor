@@ -11,6 +11,10 @@ dist/
 *.ipynb
 data/
 synthetic_data.csv
+models/
+outputs/
+.venv/
+.testtmp/
 
 # ☑️ Test & coverage outputs
 coverage.*

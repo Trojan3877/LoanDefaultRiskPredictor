@@ -3,40 +3,21 @@
 ## Research path
 
 ```text
-Versioned dataset
-  -> schema validation and cleaning
-  -> stratified outer holdout
-  -> training-only feature fitting
-  -> inner model selection
-  -> untouched holdout evaluation
-  -> metrics.json + model bundle
+Governed dataset -> strict contract -> out-of-time split when dated
+  -> training-only feature fit -> LightGBM + logistic baseline
+  -> untouched holdout metrics + uncertainty -> immutable bundle/report
 ```
-
-The model trainer records ranking, classification, calibration, confusion-matrix, environment, parameter, and runtime metadata. Acceptance targets are kept separate from measured results.
 
 ## Service path
 
 ```text
-Client
-  -> FastAPI request validation
-  -> explanation facade
-  -> structured response
-  -> request count and latency metrics
+Client -> schema -> identity/rate/admission -> packaged transform/model/threshold
+  -> review recommendation + reason codes + model/policy version
+  -> bounded-cardinality telemetry + privacy-minimized audit/feedback
 ```
 
-The current deployed API is an explanation facade. It does not load the trained model or calculate a risk score from raw borrower data.
+Startup verifies the manifest and checksum before deserialization. Production requires an API key and fails startup when the bundle is missing, corrupt, or incompatible. Liveness describes the process; readiness describes the verified model dependency.
 
 ## Deployment path
 
-```text
-GitHub Actions
-  -> static analysis and tests
-  -> runtime dependency audit
-  -> minimal container build and smoke test
-  -> Compose and Kubernetes validation
-  -> vulnerability scan + SBOM
-  -> signed GHCR release
-  -> controlled Kubernetes rollout
-```
-
-Kubernetes uses health probes, resource bounds, rolling updates, a read-only root filesystem, non-root execution, dropped Linux capabilities, RuntimeDefault seccomp, and no mounted service-account token.
+CI enforces Python 3.11/3.12 tests, 75% coverage, static/security/dependency gates, trained-bundle container smoke inference, Compose/Kubernetes validation, Trivy/SBOM, and signed GHCR releases. Runtime identity is non-root with read-only filesystems, resource limits, probes, and no service-account token.

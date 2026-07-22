@@ -1,17 +1,5 @@
-# Architecture — Phase 1 (Core ML)
+# Architecture
 
-## Overview
-Phase 1 focuses on building a reproducible and comparable ML pipeline
-for loan default risk prediction.
+The supported system is the connected LightGBM path documented in the README: strict cohort validation, temporal-preferred split, training-only feature fitting, baseline comparison, immutable checksummed bundle, and one model-backed FastAPI service. Experimental transformer and earlier duplicate API surfaces are not release paths.
 
-## Components
-- Feature Engineering
-- Baseline Models
-- Transformer-Based Tabular Model
-- Training & Evaluation
-- MLflow Experiment Tracking
-
-## Design Principles
-- Baselines retained for interpretability
-- Transformer introduced only after comparison
-- Reproducibility over raw performance
+Production boundaries: the deployment supplies a trusted model directory and secret; readiness verifies the artifact; the API produces review recommendations rather than autonomous lending decisions; external IAM, ingress, storage, monitoring, and regulatory approvals remain environment responsibilities.

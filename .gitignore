@@ -178,6 +178,8 @@ models/*.joblib
 models/*.pkl
 models/*.pt
 models/*.bin
+models/**
 outputs/
 mlruns/
 mlartifacts/
+.testtmp/

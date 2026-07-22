@@ -2,8 +2,8 @@ apiVersion: v2
 name: loandefault
 description: Helm chart for Loan Default Risk Predictor (FastAPI + LightGBM)
 type: application
-version: 0.1.0
-appVersion: "0.1.0"
+version: 1.0.0
+appVersion: "1.0.0"
 keywords:
   - fintech
   - credit-risk
@@ -13,4 +13,3 @@ keywords:
 maintainers:
   - name: Corey Leath
     email: coreyleath10@gmail.com
-icon: https://raw.githubusercontent.com/Trojan3877/LoanDefaultRiskPredictor/main/docs/LoanDefault_visual.png

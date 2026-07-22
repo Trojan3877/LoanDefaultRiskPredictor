@@ -1,3 +1,9 @@
 fastapi>=0.139,<0.140
 uvicorn>=0.51,<0.52
 prometheus-client>=0.25,<0.26
+pandas>=2.3,<2.4
+numpy>=2.4,<2.5
+scikit-learn>=1.9,<1.10
+lightgbm>=4.6,<4.7
+joblib>=1.5,<1.6
+category-encoders>=2.9,<2.10

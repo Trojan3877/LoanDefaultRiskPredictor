@@ -1,11 +1,11 @@
 # Loan Default Risk Predictor
 
-A research-oriented credit-risk classification pipeline with an evidence-backed L6 engineering baseline.
+A model-backed credit-risk research pipeline with an evidence-backed L5 production-candidate baseline.
 
 ## Project status
 
-- Leakage-controlled holdout evaluation and machine-readable metrics provenance
-- Validated FastAPI facade with health, readiness, and Prometheus telemetry
+- Temporal-preferred evaluation, logistic baseline, calibration/ranking metrics, and uncertainty
+- Verified model-backed FastAPI service with model-aware readiness and Prometheus telemetry
 - Minimal non-root runtime container
 - Compose and Kubernetes deployment controls
 - Static analysis, tests, dependency audit, container scan, SBOM, and signed releases
@@ -20,6 +20,8 @@ A research-oriented credit-risk classification pipeline with an evidence-backed 
 python -m pip install -r requirements/dev.txt
 uvicorn api.inference_api:app --host 127.0.0.1 --port 8000
 ```
+
+Set `MODEL_BUNDLE_PATH` to a bundle produced by `python -m src.train`. Readiness remains false without a verified model.
 
 Operational endpoints:
 
