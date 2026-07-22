@@ -6,30 +6,32 @@
       <meta charset="utf-8">
       <meta name="viewport" content="width=device-width,initial-scale=1">
       
-        <meta name="description" content="Research-oriented credit-risk pipeline and L6 deployment baseline">
+        <meta name="description" content="Model-backed credit-risk research pipeline and L5 production-candidate baseline">
       
       
       
-        <link rel="canonical" href="https://coreyleath-code.github.io/LoanDefaultRiskPredictor/latest/L6_ENGINEERING_QUALITY/">
+        <link rel="canonical" href="https://coreyleath-code.github.io/LoanDefaultRiskPredictor/latest/L5_ENGINEERING_QUALITY/">
       
       
         <link rel="prev" href="../architecture/">
       
+      
+        <link rel="next" href="../MODEL_CARD/">
       
       
         
       
       
       <link rel="icon" href="../assets/images/favicon.png">
-      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.6">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.7">
     
     
       
-        <title>L6 Engineering Quality - Loan Default Risk Predictor</title>
+        <title>L5 Engineering Quality - Loan Default Risk Predictor</title>
       
     
     
-      <link rel="stylesheet" href="../assets/stylesheets/main.484c7ddc.min.css">
+      <link rel="stylesheet" href="../assets/stylesheets/main.ec1eaa64.min.css">
       
         
         <link rel="stylesheet" href="../assets/stylesheets/palette.ab4e12ef.min.css">
@@ -74,7 +76,7 @@
     <div data-md-component="skip">
       
         
-        <a href="#l6-engineering-quality-standard" class="md-skip">
+        <a href="#l5-engineering-quality-standard" class="md-skip">
           Skip to content
         </a>
       
@@ -114,7 +116,7 @@
         <div class="md-header__topic" data-md-component="header-topic">
           <span class="md-ellipsis">
             
-              L6 Engineering Quality
+              L5 Engineering Quality
             
           </span>
         </div>
@@ -297,24 +299,6 @@
         
       
       
-        <label class="md-nav__link md-nav__link--active" for="__toc">
-          
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    L6 Engineering Quality
-  
-
-    
-  </span>
-  
-  
-
-          <span class="md-nav__icon md-icon"></span>
-        </label>
-      
       <a href="./" class="md-nav__link md-nav__link--active">
         
   
@@ -322,7 +306,7 @@
   <span class="md-ellipsis">
     
   
-    L6 Engineering Quality
+    L5 Engineering Quality
   
 
     
@@ -332,69 +316,114 @@
 
       </a>
       
-        
+    </li>
+  
 
-<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+    
+      
+      
   
   
   
+  
+    <li class="md-nav__item">
+      <a href="../MODEL_CARD/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
     
   
+    Model Card
   
-    <label class="md-nav__title" for="__toc">
-      <span class="md-nav__icon md-icon"></span>
-      Table of contents
-    </label>
-    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
-      
-        <li class="md-nav__item">
-  <a href="#quality-gates" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Quality gates
-      
-    </span>
-  </a>
+
+    
+  </span>
   
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#nine-deployment-tiers" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Nine deployment tiers
-      
-    </span>
-  </a>
   
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#coverage-ratchet" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Coverage ratchet
-      
-    </span>
-  </a>
+
+      </a>
+    </li>
   
-</li>
+
+    
       
-        <li class="md-nav__item">
-  <a href="#exception-policy" class="md-nav__link">
-    <span class="md-ellipsis">
       
-        Exception policy
-      
-    </span>
-  </a>
   
-</li>
-      
-    </ul>
   
-</nav>
+  
+  
+    <li class="md-nav__item">
+      <a href="../BENCHMARKS/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Benchmarks
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
       
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../OPERATIONS/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Operations
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../GOVERNANCE/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Governance
+  
+
+    
+  </span>
+  
+  
+
+      </a>
     </li>
   
 
@@ -419,58 +448,6 @@
     
   
   
-    <label class="md-nav__title" for="__toc">
-      <span class="md-nav__icon md-icon"></span>
-      Table of contents
-    </label>
-    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
-      
-        <li class="md-nav__item">
-  <a href="#quality-gates" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Quality gates
-      
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#nine-deployment-tiers" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Nine deployment tiers
-      
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#coverage-ratchet" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Coverage ratchet
-      
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#exception-policy" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Exception policy
-      
-    </span>
-  </a>
-  
-</li>
-      
-    </ul>
-  
 </nav>
                   </div>
                 </div>
@@ -489,91 +466,60 @@
   
 
 
-<h1 id="l6-engineering-quality-standard">L6 Engineering Quality Standard<a class="headerlink" href="#l6-engineering-quality-standard" title="Permanent link">&para;</a></h1>
-<p>This document defines L6 as evidence-backed engineering maturity for this repository. A control is complete only when it has implementation, automated verification, an owner, and an operational response.</p>
-<h2 id="quality-gates">Quality gates<a class="headerlink" href="#quality-gates" title="Permanent link">&para;</a></h2>
+<h1 id="l5-engineering-quality-standard">L5 Engineering Quality Standard<a class="headerlink" href="#l5-engineering-quality-standard" title="Permanent link">&para;</a></h1>
+<p>L5 means the repository demonstrates system ownership through explicit contracts, measurable gates, failure behavior, operational evidence, and honest boundaries. It is not a job-title claim or regulatory certification.</p>
 <table>
 <thead>
 <tr>
 <th>Domain</th>
-<th>Required evidence</th>
-<th>Automated gate</th>
+<th>Automated evidence</th>
 <th>Owner response</th>
 </tr>
 </thead>
 <tbody>
 <tr>
 <td>Correctness</td>
-<td>typed contracts and deterministic transforms</td>
-<td>mypy, compile, pytest</td>
+<td>strict schemas, model-backed E2E tests, &gt;=75% branch-aware coverage</td>
 <td>fix or revert</td>
 </tr>
 <tr>
 <td>Research validity</td>
-<td>holdout isolation and provenance record</td>
-<td>feature/training tests</td>
-<td>invalidate affected benchmark</td>
+<td>temporal-preferred split, baseline, calibration/ranking metrics, uncertainty</td>
+<td>invalidate unsupported report</td>
 </tr>
 <tr>
-<td>Maintainability</td>
-<td>bounded modules and dependency layers</td>
-<td>Ruff and coverage &gt;=18% baseline, ratcheted upward</td>
-<td>refactor before expansion</td>
+<td>Artifact integrity</td>
+<td>schema validation and SHA-256 before deserialization</td>
+<td>reject/revoke bundle</td>
 </tr>
 <tr>
 <td>Security</td>
-<td>minimal runtime, non-root, vulnerability policy</td>
-<td>Bandit, pip-audit, Trivy</td>
-<td>patch or document exception</td>
+<td>Ruff, mypy, Bandit, pip-audit, non-root/read-only runtime</td>
+<td>patch or time-bound exception</td>
 </tr>
 <tr>
 <td>Reliability</td>
-<td>health/readiness and resource bounds</td>
-<td>container smoke test, kubeconform</td>
-<td>rollback unhealthy release</td>
+<td>fail-closed startup, readiness, limits, smoke inference, probes</td>
+<td>rollback to last-known-good</td>
 </tr>
 <tr>
 <td>Supply chain</td>
-<td>SBOM and signed immutable image</td>
-<td>publish workflow</td>
-<td>block unsigned deployment</td>
+<td>dependency audit, Trivy, SBOM, signed image</td>
+<td>block unsigned release</td>
 </tr>
 <tr>
 <td>Observability</td>
-<td>request count and latency telemetry</td>
-<td>API contract tests</td>
-<td>investigate SLO breach</td>
+<td>bounded-cardinality service/model/feedback telemetry</td>
+<td>investigate SLO or drift alert</td>
 </tr>
 <tr>
 <td>Governance</td>
-<td>owners, limitations, disclosure path</td>
-<td>CODEOWNERS and SECURITY.md</td>
-<td>human approval</td>
-</tr>
-<tr>
-<td>Delivery</td>
-<td>repeatable build and rollback</td>
-<td>CI, Compose, Kubernetes</td>
-<td>rollout status and undo</td>
+<td>model/policy versions, limitations, approval checklist</td>
+<td>require human sign-off</td>
 </tr>
 </tbody>
 </table>
-<h2 id="nine-deployment-tiers">Nine deployment tiers<a class="headerlink" href="#nine-deployment-tiers" title="Permanent link">&para;</a></h2>
-<ol>
-<li><strong>Reproducible source:</strong> bounded dependencies, deterministic seed, versioned metrics schema.</li>
-<li><strong>Data/model integrity:</strong> validated schema, training-only learned transforms, identifiers excluded.</li>
-<li><strong>Code quality:</strong> static analysis, typing, security lint, branch coverage, contract tests.</li>
-<li><strong>Artifact quality:</strong> minimal non-root image, health check, runtime-only dependencies.</li>
-<li><strong>Environment parity:</strong> Compose enforces health, read-only filesystem, and restart behavior.</li>
-<li><strong>Orchestration safety:</strong> offline schema validation, probes, resource limits, rolling updates, restricted security context.</li>
-<li><strong>Supply-chain trust:</strong> dependency audit, Trivy gate, SPDX SBOM, GHCR, Cosign signature.</li>
-<li><strong>Production telemetry:</strong> liveness, readiness, Prometheus counts and latency.</li>
-<li><strong>Operational governance:</strong> ownership, private disclosure, release gates, limitations, rollback.</li>
-</ol>
-<h2 id="coverage-ratchet">Coverage ratchet<a class="headerlink" href="#coverage-ratchet" title="Permanent link">&para;</a></h2>
-<p>The initial repository-wide branch coverage baseline is 18%. CI prevents regression below that measured level. Every change that materially raises coverage should raise the threshold; new or changed critical paths require focused tests regardless of the global percentage. The baseline is evidence of current state, not a claim that 18% is an end-state target.</p>
-<h2 id="exception-policy">Exception policy<a class="headerlink" href="#exception-policy" title="Permanent link">&para;</a></h2>
-<p>A failing gate may be waived only through a time-bounded issue that identifies the risk, owner, compensating control, expiration date, and removal plan. Acceptance targets are not measured benchmark results. Production deployment additionally requires dataset governance, fairness/calibration review, secrets management, IAM, network policy, and environment-specific incident procedures.</p>
+<p>Exceptions require a GitHub issue with owner, risk, compensating control, expiration, and removal plan. New critical code requires focused tests even when aggregate coverage passes.</p>
 
 
 
@@ -596,7 +542,7 @@
     <span class="md-icon" title="Last update">
       <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M21 13.1c-.1 0-.3.1-.4.2l-1 1 2.1 2.1 1-1c.2-.2.2-.6 0-.8l-1.3-1.3c-.1-.1-.2-.2-.4-.2m-1.9 1.8-6.1 6V23h2.1l6.1-6.1zM12.5 7v5.2l4 2.4-1 1L11 13V7zM11 21.9c-5.1-.5-9-4.8-9-9.9C2 6.5 6.5 2 12 2c5.3 0 9.6 4.1 10 9.3-.3-.1-.6-.2-1-.2s-.7.1-1 .2C19.6 7.2 16.2 4 12 4c-4.4 0-8 3.6-8 8 0 4.1 3.1 7.5 7.1 7.9l-.1.2z"/></svg>
     </span>
-    <span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-date" title="July 15, 2026 20:10:07 UTC">July 15, 2026</span>
+    <span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-date" title="July 22, 2026 23:23:38 UTC">July 22, 2026</span>
   </span>
 
     
@@ -606,7 +552,7 @@
     <span class="md-icon" title="Created">
       <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M14.47 15.08 11 13V7h1.5v5.25l3.08 1.83c-.41.28-.79.62-1.11 1m-1.39 4.84c-.36.05-.71.08-1.08.08-4.42 0-8-3.58-8-8s3.58-8 8-8 8 3.58 8 8c0 .37-.03.72-.08 1.08.69.1 1.33.32 1.92.64.1-.56.16-1.13.16-1.72 0-5.5-4.5-10-10-10S2 6.5 2 12s4.47 10 10 10c.59 0 1.16-.06 1.72-.16-.32-.59-.54-1.23-.64-1.92M18 15v3h-3v2h3v3h2v-3h3v-2h-3v-3z"/></svg>
     </span>
-    <span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-date" title="July 15, 2026 19:53:57 UTC">July 15, 2026</span>
+    <span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-date" title="July 22, 2026 23:23:38 UTC">July 22, 2026</span>
   </span>
 
     
@@ -658,7 +604,7 @@
       <script id="__config" type="application/json">{"annotate": null, "base": "..", "features": ["navigation.sections", "navigation.expand", "content.code.copy", "toc.follow"], "search": "../assets/javascripts/workers/search.2c215733.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": {"provider": "mike"}}</script>
     
     
-      <script src="../assets/javascripts/bundle.79ae519e.min.js"></script>
+      <script src="../assets/javascripts/bundle.d7400e89.min.js"></script>
       
     
   </body>
