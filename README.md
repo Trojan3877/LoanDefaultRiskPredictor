@@ -37,7 +37,7 @@ The primary endpoint is ROC-AUC. PR-AUC is reported because default is commonly 
 - Final evaluation: exactly one pass over the untouched outer holdout.
 - Provenance: the metrics JSON records row counts, seed, split fraction, trial count, package versions, parameters, boosting rounds, elapsed training time, threshold, and timestamp.
 
-A random row split does not estimate temporal or institution-to-institution generalization. For a production study, replace it with an out-of-time test set and an external validation cohort.
+A random row split does not estimate temporal or institution-to-institution generalization. For a production study, replace it with an out-of-time test set and an external validation cohort.  
 
 ## Metrics and benchmarks
 
