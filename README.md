@@ -124,7 +124,7 @@ Observed on 2026-07-22:
 
 Environment: Python 3.12.13, Windows 11 build 26200, AMD64 Family 25 Model 97. The deterministic synthetic bundle validates plumbing only. This excludes HTTP, network, concurrency, autoscaling, storage, and production LightGBM quality; it is not an availability or throughput SLO.
 
-## L5 engineering decisions
+## Engineering decisions
 
 | Decision | Why | Tradeoff / follow-up |
 |---|---|---|
