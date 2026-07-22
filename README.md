@@ -1,161 +1,213 @@
 # Loan Default Risk Predictor
-[![L6 Engineering Quality](https://github.com/CoreyLeath-code/LoanDefaultRiskPredictor/actions/workflows/ci.yml/badge.svg?branch=main)](https://github.com/CoreyLeath-code/LoanDefaultRiskPredictor/actions/workflows/ci.yml)
-[![Docs Deploy](https://github.com/CoreyLeath-code/LoanDefaultRiskPredictor/actions/workflows/docs-deploy.yml/badge.svg?branch=main)](https://github.com/CoreyLeath-code/LoanDefaultRiskPredictor/actions/workflows/docs-deploy.yml)
-[![Container Security](https://github.com/CoreyLeath-code/LoanDefaultRiskPredictor/actions/workflows/container-scan.yml/badge.svg?branch=main)](https://github.com/CoreyLeath-code/LoanDefaultRiskPredictor/actions/workflows/container-scan.yml)
-[![Docker Publish](https://github.com/CoreyLeath-code/LoanDefaultRiskPredictor/actions/workflows/docker-publish.yml/badge.svg)](https://github.com/CoreyLeath-code/LoanDefaultRiskPredictor/actions/workflows/docker-publish.yml)
-![Engineering Quality](https://img.shields.io/badge/Engineering%20Quality-L6-7c3aed)
-![Deployment Hygiene](https://img.shields.io/badge/Deployment%20Hygiene-9%2F9-16a34a)
-![Python](https://img.shields.io/badge/Python-3.11%20%7C%203.12-3776ab?logo=python&logoColor=white)
-![FastAPI](https://img.shields.io/badge/FastAPI-Validated%20API-009688?logo=fastapi&logoColor=white)
-![LightGBM](https://img.shields.io/badge/LightGBM-Credit%20Risk-2f855a)
-![Docker](https://img.shields.io/badge/Docker-Hardened-2496ed?logo=docker&logoColor=white)
-![Kubernetes](https://img.shields.io/badge/Kubernetes-Validated-326ce5?logo=kubernetes&logoColor=white)
-![Prometheus](https://img.shields.io/badge/Prometheus-Observed-e6522c?logo=prometheus&logoColor=white)
-![SBOM](https://img.shields.io/badge/SBOM-SPDX-blue)
-![Supply Chain](https://img.shields.io/badge/Supply%20Chain-Cosign%20Signed-6f42c1)
-![Security](https://img.shields.io/badge/Security-Trivy%20%7C%20Bandit-brightgreen)
-![License](https://img.shields.io/badge/License-MIT-green)
 
+<p align="center"><strong>A governed, versioned LightGBM research pipeline with verified model-backed serving.</strong></p>
 
-A research-oriented credit-risk classification pipeline built with pandas, LightGBM, Optuna, MLflow, FastAPI, Docker, and Kubernetes.
+<p align="center">
+  <a href="https://github.com/CoreyLeath-code/LoanDefaultRiskPredictor/actions/workflows/ci.yml"><img src="https://github.com/CoreyLeath-code/LoanDefaultRiskPredictor/actions/workflows/ci.yml/badge.svg?branch=main" alt="L5 quality"></a>
+  <a href="https://github.com/CoreyLeath-code/LoanDefaultRiskPredictor/actions/workflows/container-scan.yml"><img src="https://github.com/CoreyLeath-code/LoanDefaultRiskPredictor/actions/workflows/container-scan.yml/badge.svg?branch=main" alt="Container security"></a>
+  <a href="https://github.com/CoreyLeath-code/LoanDefaultRiskPredictor/actions/workflows/docker-publish.yml"><img src="https://github.com/CoreyLeath-code/LoanDefaultRiskPredictor/actions/workflows/docker-publish.yml/badge.svg" alt="Signed release"></a>
+  <a href="https://github.com/CoreyLeath-code/LoanDefaultRiskPredictor/actions/workflows/docs-deploy.yml"><img src="https://github.com/CoreyLeath-code/LoanDefaultRiskPredictor/actions/workflows/docs-deploy.yml/badge.svg?branch=main" alt="Documentation"></a>
+</p>
 
-> This project is an engineering demonstration, not a credit decision system. It must not be used for lending decisions without representative-data validation, fairness analysis, calibration, legal review, monitoring, and human oversight.
+<p align="center">
+  <img src="https://img.shields.io/badge/Python-3.11%20%7C%203.12-3776AB?logo=python&logoColor=white" alt="Python">
+  <img src="https://img.shields.io/badge/LightGBM-credit%20risk-2F855A" alt="LightGBM">
+  <img src="https://img.shields.io/badge/FastAPI-model--backed-009688?logo=fastapi" alt="FastAPI">
+  <img src="https://img.shields.io/badge/Coverage%20gate-75%25-16A34A" alt="Coverage gate">
+  <img src="https://img.shields.io/badge/Artifact-SHA--256%20verified-6C5CE7" alt="Artifact integrity">
+  <img src="https://img.shields.io/badge/Container-non--root-2496ED?logo=docker&logoColor=white" alt="Container">
+  <a href="LICENSE"><img src="https://img.shields.io/badge/License-MIT-yellow" alt="MIT"></a>
+</p>
 
-## Research question
+> **Important:** this is a production-candidate engineering demonstration, not an approved credit-decision system. It must not be used for lending decisions without representative-data validation, fair-lending and calibration review, privacy/legal approval, human oversight, and environment-specific security controls.
 
-Given structured borrower and loan attributes, how accurately can a gradient-boosted classifier rank default risk on observations that were not used for preprocessing, hyperparameter selection, or fitting?
+## What changed
 
-The primary endpoint is ROC-AUC. PR-AUC is reported because default is commonly a minority outcome. Recall, precision, F1, Brier score, accuracy, the decision threshold, and the full confusion matrix are recorded so ranking, calibration, and operating-point behavior are not collapsed into one number.
+The repository now has one supported path from a raw, validated loan request to a traceable model response. Training and serving share the fitted feature pipeline, threshold, schema version, metrics, lineage, and checksum manifest. Production startup fails when authentication or a verified model is unavailable.
 
-## Experimental design
+## Engineering features
 
-- Unit of analysis: one loan record.
-- Outcome: binary `defaulted` column.
-- Split: stratified 80/20 holdout with seed 2025 by default.
-- Leakage control: target encoding and all other learned transforms are fitted on the training partition only.
-- Model selection: Optuna tunes LightGBM on an inner split of the training partition.
-- Final evaluation: exactly one pass over the untouched outer holdout.
-- Provenance: the metrics JSON records row counts, seed, split fraction, trial count, package versions, parameters, boosting rounds, elapsed training time, threshold, and timestamp.
+- Strict raw-feature contracts with bounds, enums, unknown-field rejection, and no borrower-name field.
+- Training-only fitted encoders and deterministic seeds; identifiers never enter model features.
+- Out-of-time splitting when `issue_d` is present, with an explicit random fallback for undated research data.
+- LightGBM candidate compared with logistic regression on the untouched holdout.
+- ROC-AUC, PR-AUC, Brier score, log loss, ECE, operating-point metrics, confusion counts, and bootstrap ROC-AUC interval.
+- Offline group-slice metrics with minimum cohort size; protected fields remain outside model inputs.
+- Immutable bundle manifest with model/preprocessor, threshold, model/policy/schema versions, dataset fingerprint, commit, metrics, and SHA-256.
+- Model-aware readiness, API-key option, rate limiting, admission control, security headers, and privacy-minimized audit/feedback events.
+- Prometheus request, latency, prediction, feedback, saturation, and model-version signals.
+- Non-root/read-only container and Kubernetes probes, limits, seccomp, dropped capabilities, secret reference, and read-only model mount.
+- Python 3.11/3.12 CI, 75% coverage floor, Ruff, mypy, Bandit, dependency audit, container smoke inference, and manifest validation.
 
-A random row split does not estimate temporal or institution-to-institution generalization. For a production study, replace it with an out-of-time test set and an external validation cohort.  
+## Architecture
 
-## Metrics and benchmarks
+```text
+versioned cohort -> strict data contract -> chronological split
+       |                                      |
+       v                                      v
+training-only transforms -> LightGBM + logistic baseline -> research report
+       |
+       v
+weights + transforms + threshold + lineage + metrics + SHA-256 manifest
+       |
+       v
+startup verification -> auth -> rate/admission -> transform -> score -> policy routing
+                                                              |          |
+                                                 Prometheus + audit + feedback
+```
 
-No empirical score is claimed in this README yet because the repository does not include a redistributable, versioned evaluation dataset or a committed metrics artifact. Earlier console metrics were computed on training data and are not treated as benchmark evidence.
+The API recommends review; it does not approve or decline credit. Deterministic reason codes are technical placeholders pending policy and adverse-action governance.
 
-| Measure | Recorded by trainer | Acceptance target* | Published result |
-|---|---:|---:|---:|
-| ROC-AUC | Yes | >= 0.82 | Pending dataset-backed run |
-| PR-AUC | Yes | Report with prevalence | Pending |
-| Recall | Yes | >= 0.70 | Pending |
-| Precision | Yes | Context dependent | Pending |
-| F1 | Yes | Context dependent | Pending |
-| Brier score | Yes | Lower than prevalence baseline | Pending |
-| Confusion matrix | Yes | Report counts | Pending |
-| Training time | Yes | Report hardware with result | Pending |
-
-*Targets are deployment gates, not measured performance. They must be reviewed against business costs, group-level error rates, and the dataset's default prevalence.
-
-Run a reproducible benchmark:
+## Quick start
 
 ```bash
 python -m venv .venv
-source .venv/bin/activate             # Windows: .venv\Scripts\activate
+source .venv/bin/activate                 # Windows: .venv\Scripts\activate
 python -m pip install -r requirements/dev.txt
+pytest --cov --cov-fail-under=75
+```
+
+Train and package a candidate using a governed dataset:
+
+```bash
 python -m src.train \
   --uri data/loans.csv \
-  --trials 40 \
+  --trials 20 \
   --seed 2025 \
   --test-size 0.20 \
   --threshold 0.50 \
-  --output models/latest.joblib \
+  --model-version candidate-2026-07 \
+  --output models/current \
   --metrics-output outputs/metrics.json
 ```
 
-The JSON output is the canonical result record. When publishing a result, commit a small redacted record under `benchmarks/` with the dataset name/version/hash, commit SHA, hardware, cohort definition, and any exclusions. Do not commit borrower-level data or model artifacts.
-
-## Data contract
-
-Required columns are defined in `src/data_loader.py`:
-
-`loan_id`, `loan_amnt`, `term`, `emp_length`, `home_ownership`, `annual_inc`, `purpose`, `dti`, `delinq_2yrs`, `open_acc`, `pub_rec`, `revol_util`, `total_acc`, and `defaulted`.
-
-The loader rejects missing columns, enforces dtypes, removes duplicate loan IDs, and drops incomplete rows. Dataset licensing, collection period, target observation window, and exclusion criteria remain the responsibility of each benchmark report.
-
-## API
-
-The current FastAPI service is a validated explanation facade. It validates a supplied risk score and feature contributions; it does not yet load `models/latest.joblib` or compute a risk score from raw borrower fields.
+Serve the verified bundle:
 
 ```bash
+export MODEL_BUNDLE_PATH=models/current
+export LOAN_RISK_API_KEY="use-a-secret-manager-in-production"
 uvicorn api.inference_api:app --host 0.0.0.0 --port 8000
-curl http://localhost:8000/healthz
-curl http://localhost:8000/readyz
-curl http://localhost:8000/metrics
-curl -X POST http://localhost:8000/predict \
-  -H "content-type: application/json" \
-  -d '{"risk_score":0.68,"top_features":{"dti":0.42,"revol_util":0.31}}'
 ```
 
-Interactive API documentation is available at `http://localhost:8000/docs`.
+`GET /healthz` is process liveness. `GET /readyz` returns 503 until a verified bundle is loaded. `POST /predict` accepts the versioned raw-loan schema and returns a probability, review routing, reason codes, request ID, model version, and policy version.
 
-## Nine-tier deployment hygiene
+## Research metrics
 
-| Tier | Control | Repository evidence |
-|---:|---|---|
-| 1 | Reproducibility | Seeded split/tuning, package constraints, versioned metrics schema |
-| 2 | Data and model contracts | Required schema, dtype checks, strict API request model |
-| 3 | Test and quality gates | Ruff, mypy, Bandit, pytest/coverage, dependency audit, Compose and manifest validation in CI |
-| 4 | Container hygiene | Slim image, non-root UID/GID, no pip cache, health check |
-| 5 | Local orchestration | Compose health check, restart policy, read-only filesystem, pinned MLflow image |
-| 6 | Kubernetes runtime | Probes, requests/limits, rolling update, dropped capabilities, seccomp, no service-account token |
-| 7 | Supply chain | Trivy HIGH/CRITICAL gate, SPDX SBOM, GHCR publishing, keyless Cosign signing |
-| 8 | Observability | Health/readiness endpoints and Prometheus request/latency metrics |
-| 9 | Operational governance | Explicit model limitations, benchmark protocol, immutable-image guidance, rollback procedure |
+No credit-model performance result is claimed because this repository does not contain a versioned, representative lending dataset or approved external cohort. The trainer produces the following evidence for a supplied dataset:
 
-The measurable L6 definition, ownership model, gate evidence, and exception policy are documented in [`docs/L6_ENGINEERING_QUALITY.md`](docs/L6_ENGINEERING_QUALITY.md).\n\nThe controls are a deployable baseline, not proof of compliance. Cloud IAM, network policy, secrets management, encrypted storage, audit retention, fairness monitoring, and incident response must be implemented in the target environment.
+| Evidence | Candidate | Baseline | Promotion expectation |
+|---|---:|---:|---|
+| ROC-AUC + bootstrap 95% CI | Yes | Logistic ROC-AUC | Dataset-specific gate |
+| PR-AUC and prevalence context | Yes | Yes | Must exceed reviewed baseline |
+| Brier score and log loss | Yes | Yes | Calibrated-probability review |
+| Expected calibration error | Yes | Yes | Segment review required |
+| Precision, recall, F1, confusion counts | Yes | Yes | Threshold-cost review |
+| Out-of-time cohort | When dated | Same cohort | Required for production study |
+| External cohort | Not bundled | Not bundled | Required before lending use |
+| Group/intersectional analysis | Utility provided | Same method | Approval-owned acceptance criteria |
 
-## Deployment and rollback
+The JSON report is canonical. Publish a redacted record only with dataset version/hash, cohort definition, exclusions, commit, hardware, uncertainty, limitations, and reviewer status.
 
-Build and verify locally:
+## Reproducible engineering benchmark
+
+Command:
 
 ```bash
-docker build -t loan-risk-api:local .
-docker compose up --build
-docker run --rm -v "$PWD:/work" ghcr.io/yannh/kubeconform:v0.7.0 -strict -summary /work/infra/k8s
+python -m benchmarks.inference --iterations 300 --warmup 30
 ```
 
-Release images are published by semantic-version tags and signed in GitHub Actions. Before applying Kubernetes manifests, replace the example image tag with the released image digest. Use an immutable digest in production.
+Observed on 2026-07-22:
 
-```bash
-kubectl apply -f infra/k8s/
-kubectl rollout status deployment/loan-risk-api
-kubectl rollout undo deployment/loan-risk-api   # rollback
-```
+| Scope | Mean | p50 | p95 | p99 | Sequential rate |
+|---|---:|---:|---:|---:|---:|
+| Batch-1 preprocessing + logistic smoke-model inference | 4.248 ms | 4.239 ms | 4.328 ms | 4.676 ms | 235.396/s |
 
-Release gates should include: passing CI, container scan, signature verification, dataset-specific metric gates, calibration review, group-level error analysis, smoke tests, and an approved rollback owner.
+Environment: Python 3.12.13, Windows 11 build 26200, AMD64 Family 25 Model 97. The deterministic synthetic bundle validates plumbing only. This excludes HTTP, network, concurrency, autoscaling, storage, and production LightGBM quality; it is not an availability or throughput SLO.
 
-## Repository layout
+## L5 engineering decisions
 
-```text
-api/                    FastAPI service and operational endpoints
-src/                    data loading, feature engineering, training
-tests/                  unit and contract tests
-requirements/           separated runtime, training, and quality dependencies
-docs/                   L6 quality standard and operational evidence
-infra/k8s/              Kubernetes baseline
-.github/workflows/      CI, scanning, publishing and signing
-models/                 ignored runtime artifacts
-outputs/                ignored local metrics and reports
-```
+| Decision | Why | Tradeoff / follow-up |
+|---|---|---|
+| One API and one artifact contract | Prevents training-serving skew and false-green CI | Requires migration from older demo entrypoints |
+| Production fails closed | Avoids random, stale, or unverifiable scoring | Deployment must provide model and secret before readiness |
+| Manifest + checksum before joblib load | Detects corruption and binds metadata | Joblib still requires an administrator-controlled trusted source |
+| Model threshold is packaged | Keeps evaluation and serving policy aligned | Threshold changes require versioned policy approval |
+| Temporal split preferred | Better approximates future-cohort behavior | External validation is still necessary |
+| Deterministic reason codes | Auditable and testable | Must be validated for faithfulness and legally approved wording |
+| Local limits plus gateway ownership | Protects a process without pretending it is distributed control | Production gateway must enforce global identity and quotas |
+| Honest synthetic benchmark | Reproducible engineering evidence | Does not establish model accuracy or production capacity |
 
-## Known limitations
+## Production-readiness checklist
 
-- No versioned benchmark dataset or publishable result record is included.
-- The default evaluation is a single random holdout, not temporal or external validation.
-- The service does not yet perform raw-feature model inference.
-- Probability calibration, drift detection, protected-class fairness tests, and adverse-action reason governance are not implemented.
-- Dropping missing rows can introduce selection bias and should be replaced by a documented missingness policy.
+- [x] Connected training, packaging, verification, and serving contract
+- [x] Model-aware health/readiness and container smoke inference
+- [x] Critical-path tests and 75% coverage gate
+- [x] Research metrics, baseline, temporal option, and uncertainty
+- [x] Artifact lineage, checksum, model/policy version, and rollback-compatible directory
+- [x] Non-root container, Kubernetes controls, SBOM/signing workflows
+- [ ] Representative versioned dataset and out-of-time benchmark report
+- [ ] Independent external validation cohort
+- [ ] Reviewed calibration, group/intersectional error analysis, and threshold-cost policy
+- [ ] Approved adverse-action reasons and human-review workflow
+- [ ] Cloud IAM, TLS ingress, network policy, managed secrets, encrypted storage, and audit retention
+- [ ] Canary/shadow release, drift alerts, last-known-good rollback, and exercised incident runbooks
+- [ ] Legal, privacy, fair-lending, security, and independent model-risk approval
+
+## Extended recruiter Q&A
+
+### What was the highest-leverage engineering change?
+
+Replacing a validated but non-model score facade with one verified vertical slice. The deployed endpoint now proves it can load the same preprocessing/model contract produced by training, which makes readiness and CI meaningful.
+
+### Why not describe this as “fully production-ready”?
+
+Production readiness in lending depends on data representativeness, external validation, regulatory interpretation, operational ownership, and live infrastructure. Code can enforce evidence gates, but it cannot manufacture those approvals or outcomes.
+
+### How is leakage controlled?
+
+The outer holdout is separated before fitting encoders. Hyperparameter selection uses only an inner training split, and the final holdout is evaluated once. Dated cohorts use chronological separation; undated data is explicitly labeled as a weaker random fallback.
+
+### Why retain logistic regression as a baseline?
+
+A complex model should justify its operational and governance cost. The baseline exposes whether LightGBM provides meaningful ranking or calibration improvement and supplies an interpretable fallback comparison.
+
+### How is training-serving skew prevented?
+
+The fitted `FeatureEngineer`, estimator, threshold, schema version, and metadata are promoted together. Serving verifies the checksum and transforms a DataFrame through that exact fitted object.
+
+### How would you evolve artifact security?
+
+Store bundles in an authenticated registry, sign the manifest, verify provenance at deployment admission, restrict the runtime identity to read-only access, and revoke compromised versions. The checksum detects tampering; registry trust controls who may introduce an artifact.
+
+### What happens when the model is missing or corrupt?
+
+Development remains live but not ready. Production startup fails. This prevents Kubernetes from routing traffic and makes rollback to a complete last-known-good directory deterministic.
+
+### Why are reason codes not generated by an LLM?
+
+Credit explanations must be stable, faithful, reviewable, and mapped to approved policy language. Free-form generation introduces nondeterminism and unsupported causal claims. An LLM may assist offline drafting, never become the authoritative decision explanation without governance.
+
+### What would you monitor after launch?
+
+Service latency/errors/saturation; model and policy versions; input validity and unknown-category rates; score/review distributions; data freshness and drift; delayed calibration and performance; privacy-safe group metrics; feedback coverage; and rollback/canary health.
+
+### What is the rollback unit?
+
+The complete immutable bundle plus its compatible application image and policy version. Individual model files must never be mixed across versions.
+
+### What remains the hardest problem?
+
+Obtaining representative, legally usable data and proving stable, calibrated, equitable behavior across future and external cohorts. That is a cross-functional model-risk problem, not a library-selection problem.
+
+## Supporting evidence
+
+- [Model card](docs/MODEL_CARD.md)
+- [Benchmark protocol](docs/BENCHMARKS.md)
+- [Operations and rollback](docs/OPERATIONS.md)
+- [Governance boundaries](docs/GOVERNANCE.md)
+- [L5 quality standard](docs/L5_ENGINEERING_QUALITY.md)
+- [Production-readiness audit](https://github.com/CoreyLeath-code/LoanDefaultRiskPredictor/issues/6)
 
 ## License
 
-MIT. Dataset licenses and regulatory obligations are separate from the source-code license.
+MIT. Dataset licenses, privacy duties, lending regulations, and model approvals are separate from the source-code license.

@@ -23,7 +23,8 @@ from __future__ import annotations
 import io
 import os
 import pathlib
-from typing import Iterator, Literal, Optional
+from typing import Iterator, Optional
+from urllib.parse import urlparse
 
 import boto3
 import pandas as pd
@@ -76,8 +77,10 @@ class _HTTPReader(_Reader):
         self.url = url
 
     def read(self, chunksize: Optional[int] = None) -> Iterator[pd.DataFrame]:
-        resp = requests.get(self.url, timeout=30)
+        resp = requests.get(self.url, timeout=30, allow_redirects=False)
         resp.raise_for_status()
+        if len(resp.content) > 100 * 1024 * 1024:
+            raise ValueError("Remote dataset exceeds 100 MiB limit")
         # Stream into memory; assume CSV for simplicity
         buf = io.StringIO(resp.text)
         for df in pd.read_csv(buf, chunksize=chunksize, dtype=DTYPES):
@@ -112,9 +115,17 @@ class DataLoader:
     @classmethod
     def from_uri(cls, uri: str) -> "DataLoader":
         if uri.startswith("s3://"):
-            _, bucket, *key = uri.split("/", 3)
-            return cls(_S3Reader(bucket, "/".join(key)))
+            parsed = urlparse(uri)
+            if not parsed.netloc or not parsed.path.lstrip("/"):
+                raise ValueError("S3 URI must include bucket and key")
+            return cls(_S3Reader(parsed.netloc, parsed.path.lstrip("/")))
         if uri.startswith(("http://", "https://")):
+            parsed = urlparse(uri)
+            if parsed.scheme != "https" and os.getenv("ALLOW_INSECURE_DATA_HTTP") != "1":
+                raise ValueError("Remote datasets require HTTPS")
+            allowed = {host.strip() for host in os.getenv("ALLOWED_DATA_HOSTS", "").split(",") if host.strip()}
+            if allowed and parsed.hostname not in allowed:
+                raise ValueError("Remote dataset host is not allowlisted")
             return cls(_HTTPReader(uri))
         return cls(_LocalReader(pathlib.Path(uri)))
 
@@ -136,11 +147,34 @@ class DataLoader:
 
 # ── Cleaning / validation helpers ───────────────────────────────────────────
 def _clean(df: pd.DataFrame) -> pd.DataFrame:
-    """Validate columns, enforce dtypes, drop duplicates & NaNs."""
+    """Validate a strict research cohort without silently changing membership."""
 
     if missing := REQUIRED_COLUMNS - set(df.columns):
         raise ValueError(f"Missing columns: {missing}")
 
+    if df.empty:
+        raise ValueError("Dataset is empty")
+    if df["loan_id"].duplicated().any():
+        raise ValueError("Duplicate loan_id values are not allowed")
+    if df[list(REQUIRED_COLUMNS)].isna().any().any():
+        raise ValueError("Missing required values require an explicit imputation policy")
     df = df.astype(DTYPES, errors="raise")
-    df = df.drop_duplicates("loan_id").dropna()
+    if not set(df["defaulted"].unique()).issubset({0, 1}):
+        raise ValueError("defaulted must be binary")
+    ranges = {
+        "loan_amnt": (0, 5_000_000),
+        "emp_length": (0, 70),
+        "annual_inc": (0, 100_000_000),
+        "dti": (0, 200),
+        "delinq_2yrs": (0, 100),
+        "open_acc": (0, 500),
+        "pub_rec": (0, 100),
+        "revol_util": (0, 500),
+        "total_acc": (0, 1000),
+    }
+    for column, (lower, upper) in ranges.items():
+        if not df[column].between(lower, upper, inclusive="both").all():
+            raise ValueError(f"{column} contains values outside [{lower}, {upper}]")
+    if (df["loan_amnt"] <= 0).any() or (df["annual_inc"] <= 0).any():
+        raise ValueError("loan_amnt and annual_inc must be positive")
     return df.reset_index(drop=True)

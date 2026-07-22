@@ -1,17 +1,7 @@
-# Model Evaluation Metrics
+# Metrics
 
-The following metrics are tracked for all models:
+Offline evaluation reports ROC-AUC with bootstrap interval, PR-AUC, Brier score, log loss, expected calibration error, accuracy, precision, recall, F1, threshold, and confusion counts for the candidate and logistic baseline. Group metrics are an offline utility with minimum cohort size and must be governed separately from model features.
 
-- Accuracy
-- ROC-AUC
-- Precision
-- Recall
-- F1-score
+Online telemetry reports request count/latency, in-flight work, predictions by model version/review route, and feedback coverage. Privacy-sensitive feature values and group identities must not be Prometheus labels.
 
-Baseline models (Logistic Regression, XGBoost) are compared against the
-Transformer-based tabular model.
-
-Future extensions:
-- Group fairness metrics
-- Drift detection
-- Confidence calibration
+No production SLO or model-quality number is claimed until a representative environment and dataset-backed report exist.

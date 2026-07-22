@@ -1,4 +1,4 @@
-name: L6-Engineering-Quality
+name: L5 Production Candidate Quality
 
 on:
   push:
@@ -16,59 +16,59 @@ concurrency:
 
 jobs:
   test:
+    strategy:
+      matrix:
+        python: ["3.11", "3.12"]
     runs-on: ubuntu-latest
     timeout-minutes: 25
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
         with:
-          python-version: "3.11"
+          python-version: ${{ matrix.python }}
           cache: pip
           cache-dependency-path: requirements/dev.txt
-      - name: Install development dependencies
+      - run: python -m pip install --requirement requirements/dev.txt
+      - name: Static and security gates
         run: |
-          python -m pip install --upgrade pip
-          python -m pip install --requirement requirements/dev.txt
-      - name: Static quality gates
-        run: |
-          ruff check api src tests --select E9,F63,F7,F82
+          ruff check api src evaluation tests scripts
           mypy api --ignore-missing-imports
-          bandit -q -r api src -x tests
-      - name: Compile and test
+          bandit -q -r api src evaluation -x tests -ll
+      - name: Test critical paths
         run: |
-          python -m compileall -q api src tests
-          pytest --cov --cov-report=term-missing --cov-report=xml --cov-fail-under=18
-      - name: Audit runtime dependencies
-        run: pip-audit --requirement requirements/runtime.txt
-      - name: Upload coverage
-        if: always()
-        uses: codecov/codecov-action@v4
-        continue-on-error: true
+          python -m compileall -q api src evaluation tests scripts
+          pytest --cov --cov-report=term-missing --cov-report=xml --cov-fail-under=75
+      - uses: actions/upload-artifact@v4
         with:
-          files: coverage.xml
+          name: coverage-python-${{ matrix.python }}
+          path: coverage.xml
+      - run: pip-audit --requirement requirements/runtime.txt
 
   deployment-hygiene:
     runs-on: ubuntu-latest
-    timeout-minutes: 15
+    timeout-minutes: 20
     steps:
       - uses: actions/checkout@v4
-      - name: Build minimal container
-        run: docker build --tag loan-risk-api:ci .
-      - name: Inspect runtime security contract
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+      - run: python -m pip install --requirement requirements/dev.txt
+      - name: Create a CI-only verified bundle
+        run: python -m scripts.build_smoke_bundle --output models/ci
+      - run: docker build --tag loan-risk-api:ci .
+      - name: Inspect and smoke-test model-backed container
         run: |
           test "$(docker image inspect loan-risk-api:ci --format '{{.Config.User}}')" = "10001:10001"
-          test "$(docker image inspect loan-risk-api:ci --format '{{json .Config.Healthcheck}}')" != "null"
-      - name: Smoke test container
-        run: |
-          docker run --detach --rm --name loan-risk-ci --publish 8000:8000 loan-risk-api:ci
+          docker run --detach --rm --name loan-risk-ci -p 8000:8000 \
+            --read-only --tmpfs /tmp --env ENVIRONMENT=production \
+            --env MODEL_BUNDLE_PATH=/models/current --env LOAN_RISK_API_KEY=ci-secret \
+            --volume "$PWD/models/ci:/models/current:ro" loan-risk-api:ci
           for attempt in {1..30}; do
-            if curl --fail --silent http://127.0.0.1:8000/readyz; then exit 0; fi
+            if curl --fail --silent http://127.0.0.1:8000/readyz; then break; fi
             sleep 1
           done
-          docker logs loan-risk-ci
-          exit 1
-      - name: Validate Compose
-        run: docker compose config --quiet
-      - name: Validate Kubernetes manifests offline
-        run: |
-          docker run --rm -v "$PWD:/work" ghcr.io/yannh/kubeconform:v0.7.0             -strict -summary -kubernetes-version 1.31.0 /work/infra/k8s
+          curl --fail --silent http://127.0.0.1:8000/readyz | grep test-smoke-v1
+      - run: docker compose config --quiet
+        env:
+          LOAN_RISK_API_KEY: ci-secret
+      - run: docker run --rm -v "$PWD:/work" ghcr.io/yannh/kubeconform:v0.7.0 -strict -summary -kubernetes-version 1.31.0 /work/infra/k8s

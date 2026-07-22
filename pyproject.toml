@@ -22,23 +22,19 @@ dependencies = [
   "fastapi>=0.139,<0.140",
   "uvicorn>=0.51,<0.52",
   "prometheus-client>=0.25,<0.26",
+  "pandas>=2.3,<2.4",
+  "numpy>=2.4,<2.5",
+  "scikit-learn>=1.9,<1.10",
+  "lightgbm>=4.6,<4.7",
+  "joblib>=1.5,<1.6",
+  "category-encoders>=2.9,<2.10",
 ]
 
 [project.optional-dependencies]
 train = [
-  "pandas>=2.3,<2.4",
-  "scikit-learn>=1.9,<1.10",
-  "numpy>=2.4,<2.5",
-  "torch>=2.13,<2.14",
-  "xgboost>=3.2,<3.3",
-  "lightgbm>=4.6,<4.7",
   "optuna>=4.9,<4.10",
-  "mlflow>=3.14,<3.15",
-  "streamlit>=1.59,<1.60",
-  "joblib>=1.5,<1.6",
   "boto3>=1.43,<1.44",
   "requests>=2.34,<2.35",
-  "category-encoders>=2.9,<2.10",
 ]
 dev = [
   "loan-default-risk-predictor[train]",
@@ -53,7 +49,7 @@ dev = [
 
 [tool.setuptools.packages.find]
 where = ["."]
-include = ["src*", "api*", "features*", "llm*", "models*", "mlops*", "training*", "ui*", "evaluation*", "scripts*"]
+include = ["src*", "api*", "evaluation*", "scripts*"]
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]
@@ -62,14 +58,14 @@ filterwarnings = ["error"]
 
 [tool.coverage.run]
 branch = true
-source = ["src", "api", "features", "llm", "models", "mlops", "training", "evaluation"]
+source = ["src", "api", "evaluation"]
 omit = ["tests/*", "scripts/*"]
 
 [tool.coverage.report]
 show_missing = true
 skip_covered = true
 exclude_also = ["if TYPE_CHECKING:", "if __name__ == .__main__.:"]
-fail_under = 18
+fail_under = 75
 
 [tool.ruff]
 target-version = "py311"

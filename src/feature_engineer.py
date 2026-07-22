@@ -86,6 +86,9 @@ class FeatureEngineer:
             output = output.assign(issue_ym=issue_ym).join(self._macro, on="issue_ym")
             output.drop(columns=["issue_ym"], inplace=True)
 
+        # Dates define cohort/split timing; raw strings must never reach the estimator.
+        output.drop(columns=["issue_d"], errors="ignore", inplace=True)
+
         return output.reset_index(drop=True)
 
     def fit_transform(self, df: pd.DataFrame, y: pd.Series) -> pd.DataFrame:

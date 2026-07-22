@@ -33,6 +33,16 @@ spec:
           # Replace with an immutable release digest in each environment.
           image: ghcr.io/coreyleath-code/loandefaultriskpredictor:v0.2.0
           imagePullPolicy: IfNotPresent
+          env:
+            - name: ENVIRONMENT
+              value: production
+            - name: MODEL_BUNDLE_PATH
+              value: /models/current
+            - name: LOAN_RISK_API_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: loan-risk-api
+                  key: api-key
           ports:
             - name: http
               containerPort: 8000
@@ -69,7 +79,13 @@ spec:
           volumeMounts:
             - name: tmp
               mountPath: /tmp
+            - name: model
+              mountPath: /models/current
+              readOnly: true
       volumes:
         - name: tmp
           emptyDir:
             sizeLimit: 64Mi
+        - name: model
+          persistentVolumeClaim:
+            claimName: loan-risk-model

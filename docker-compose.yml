@@ -5,13 +5,19 @@ services:
     init: true
     ports:
       - "8000:8000"
+    environment:
+      ENVIRONMENT: production
+      MODEL_BUNDLE_PATH: /models/current
+      LOAN_RISK_API_KEY: ${LOAN_RISK_API_KEY:?set LOAN_RISK_API_KEY}
+    volumes:
+      - ./models/current:/models/current:ro
     read_only: true
     tmpfs:
       - /tmp
     security_opt:
       - no-new-privileges:true
     healthcheck:
-      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://127.0.0.1:8000/healthz', timeout=2)"]
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://127.0.0.1:8000/readyz', timeout=2)"]
       interval: 30s
       timeout: 3s
       retries: 3

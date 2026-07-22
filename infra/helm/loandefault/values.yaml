@@ -6,8 +6,8 @@
 replicaCount: 2
 
 image:
-  repository: ghcr.io/trojan3877/loandefaultriskpredictor
-  tag: "0.1.0"
+  repository: ghcr.io/coreyleath-code/loandefaultriskpredictor
+  tag: "1.0.0"
   pullPolicy: IfNotPresent
 
 service:
@@ -28,14 +28,13 @@ autoscaling:
   maxReplicas: 8
   targetCPUUtilizationPercentage: 70
 
-env:
-  MODEL_PATH: "/models/latest.joblib"
-  OTEL_EXPORTER_OTLP_ENDPOINT: ""
-  SNOWFLAKE_ACCOUNT: ""
-  SNOWFLAKE_USER: ""
-  SNOWFLAKE_PASSWORD: ""
-  SNOWFLAKE_DATABASE: "ML_METRICS"
-  SNOWFLAKE_SCHEMA: "PUBLIC"
+model:
+  path: /models/current
+  pvcName: loan-risk-model
+
+apiKeySecret:
+  name: loan-risk-api
+  key: api-key
 
 ingress:
   enabled: false
