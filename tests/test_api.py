@@ -1,5 +1,5 @@
-from fastapi.testclient import TestClient
 import pytest
+from fastapi.testclient import TestClient
 
 from api.inference_api import create_app
 from tests.helpers import create_test_bundle, valid_request
@@ -12,7 +12,9 @@ def test_model_backed_api_and_operations(tmp_path):
         assert client.get("/readyz").json() == {"status": "ready", "model_version": "test-v1"}
         assert client.post("/predict", json=valid_request()).status_code == 401
         response = client.post(
-            "/predict", json=valid_request(), headers={"X-API-Key": "secret", "X-Request-ID": "request-123"}
+            "/predict",
+            json=valid_request(),
+            headers={"X-API-Key": "secret", "X-Request-ID": "request-123"},
         )
         assert response.status_code == 200
         payload = response.json()
@@ -22,7 +24,11 @@ def test_model_backed_api_and_operations(tmp_path):
         assert len(payload["reason_codes"]) == 3
         feedback = client.post(
             "/feedback",
-            json={"request_id": "request-123", "outcome": "reviewed", "observed_at": "2026-07-22T00:00:00Z"},
+            json={
+                "request_id": "request-123",
+                "outcome": "reviewed",
+                "observed_at": "2026-07-22T00:00:00Z",
+            },
             headers={"X-API-Key": "secret"},
         )
         assert feedback.status_code == 202
@@ -46,6 +52,7 @@ def test_request_contract_rejects_invalid_and_extra_values(tmp_path):
 def test_production_requires_authentication_and_model(monkeypatch, tmp_path):
     monkeypatch.setenv("ENVIRONMENT", "production")
     monkeypatch.delenv("LOAN_RISK_API_KEY", raising=False)
-    with pytest.raises(RuntimeError, match="LOAN_RISK_API_KEY"):
-        with TestClient(create_app(bundle_path=tmp_path / "missing")):
-            pass
+    with pytest.raises(RuntimeError, match="LOAN_RISK_API_KEY"), TestClient(
+        create_app(bundle_path=tmp_path / "missing")
+    ):
+        pass
