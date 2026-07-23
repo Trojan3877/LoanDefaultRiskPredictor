@@ -45,7 +45,9 @@ def _reason_codes(raw: LoanRequest) -> list[str]:
         "RECENT_DELINQUENCY": float(raw.delinq_2yrs > 0) * 100,
         "HIGH_LOAN_TO_INCOME": raw.loan_amnt / raw.annual_inc * 100,
     }
-    return [name for name, _ in sorted(candidates.items(), key=lambda item: item[1], reverse=True)[:3]]
+    return [
+        name for name, _ in sorted(candidates.items(), key=lambda item: item[1], reverse=True)[:3]
+    ]
 
 
 def create_app(
@@ -55,8 +57,8 @@ def create_app(
     requests_per_minute: int = 120,
     max_concurrency: int = 8,
 ) -> FastAPI:
-    configured_source = bundle_path if bundle_path is not None else os.getenv(
-        "MODEL_BUNDLE_PATH", "models/current"
+    configured_source = (
+        bundle_path if bundle_path is not None else os.getenv("MODEL_BUNDLE_PATH", "models/current")
     )
     configured_path = Path(configured_source)
     expected_key = api_key if api_key is not None else os.getenv("LOAN_RISK_API_KEY")
@@ -144,7 +146,9 @@ def create_app(
             transformed = bundle["feature_engineer"].transform(raw)
             probability = min(1.0, max(0.0, _score(bundle["model"], transformed)))
         except (KeyError, TypeError, ValueError) as exc:
-            raise HTTPException(status.HTTP_422_UNPROCESSABLE_ENTITY, "Feature transformation failed") from exc
+            raise HTTPException(
+                status.HTTP_422_UNPROCESSABLE_ENTITY, "Feature transformation failed"
+            ) from exc
         finally:
             IN_FLIGHT.dec()
             admission.release()

@@ -26,7 +26,7 @@ class FeatureEngineer:
         self._macro: pd.DataFrame | None = None
         self._fitted = False
 
-    def fit(self, df: pd.DataFrame, y: pd.Series) -> "FeatureEngineer":
+    def fit(self, df: pd.DataFrame, y: pd.Series) -> FeatureEngineer:
         for col in TARGET_ENC_COLS:
             encoder = TargetEncoder(cols=[col], smoothing=0.25)
             encoder.fit(df[[col]], y)

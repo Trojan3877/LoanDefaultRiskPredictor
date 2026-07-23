@@ -22,7 +22,9 @@ def classification_metrics(y_true, probabilities, threshold: float = 0.5) -> dic
     scores = np.asarray(probabilities, dtype=float)
     labels = scores >= threshold
     tn, fp, fn, tp = confusion_matrix(truth, labels, labels=[0, 1]).ravel()
-    observed, predicted = calibration_curve(truth, scores, n_bins=min(10, len(truth)), strategy="quantile")
+    observed, predicted = calibration_curve(
+        truth, scores, n_bins=min(10, len(truth)), strategy="quantile"
+    )
     ece = float(np.mean(np.abs(observed - predicted))) if len(observed) else 0.0
     return {
         "roc_auc": float(roc_auc_score(truth, scores)),
@@ -42,7 +44,9 @@ def classification_metrics(y_true, probabilities, threshold: float = 0.5) -> dic
     }
 
 
-def bootstrap_auc_interval(y_true, probabilities, *, samples: int = 200, seed: int = 2025) -> tuple[float, float]:
+def bootstrap_auc_interval(
+    y_true, probabilities, *, samples: int = 200, seed: int = 2025
+) -> tuple[float, float]:
     truth = np.asarray(y_true, dtype=int)
     scores = np.asarray(probabilities, dtype=float)
     rng = np.random.default_rng(seed)
@@ -56,12 +60,16 @@ def bootstrap_auc_interval(y_true, probabilities, *, samples: int = 200, seed: i
     return float(np.percentile(values, 2.5)), float(np.percentile(values, 97.5))
 
 
-def group_metrics(frame, group_column: str, y_true, probabilities, threshold: float) -> dict[str, dict[str, float | int]]:
+def group_metrics(
+    frame, group_column: str, y_true, probabilities, threshold: float
+) -> dict[str, dict[str, float | int]]:
     """Offline-only slice metrics; protected fields must never enter model features."""
 
     result: dict[str, dict[str, float | int]] = {}
     for value in sorted(frame[group_column].dropna().astype(str).unique()):
         mask = frame[group_column].astype(str) == value
         if int(mask.sum()) >= 30 and len(np.unique(np.asarray(y_true)[mask])) == 2:
-            result[value] = classification_metrics(np.asarray(y_true)[mask], np.asarray(probabilities)[mask], threshold)
+            result[value] = classification_metrics(
+                np.asarray(y_true)[mask], np.asarray(probabilities)[mask], threshold
+            )
     return result

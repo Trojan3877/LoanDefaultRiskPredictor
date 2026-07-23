@@ -17,7 +17,7 @@ def test_group_metrics_enforces_minimum_cohort():
     import pandas as pd
 
     groups = pd.DataFrame({"cohort": ["A"] * 40 + ["B"] * 10})
-    truth = np.array(([0, 1] * 25))
+    truth = np.array([0, 1] * 25)
     scores = np.where(truth == 1, 0.8, 0.2)
     result = group_metrics(groups, "cohort", truth, scores, 0.5)
     assert set(result) == {"A"}
