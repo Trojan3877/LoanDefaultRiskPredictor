@@ -4,6 +4,9 @@ on:
   push:
     branches: [main]
     paths: ["Dockerfile", "requirements/runtime.txt", ".github/workflows/container-scan.yml"]
+  pull_request:
+    branches: [main]
+    paths: ["Dockerfile", "requirements/runtime.txt", ".github/workflows/container-scan.yml"]
   schedule:
     - cron: "0 2 * * 1"
   workflow_dispatch:
@@ -14,22 +17,28 @@ permissions:
 jobs:
   trivy:
     runs-on: ubuntu-latest
+    timeout-minutes: 20
     steps:
-      - uses: actions/checkout@v4
-      - run: docker build -t loanrisk-scan:ci .
-      - uses: aquasecurity/trivy-action@0.33.1
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Build image
+        run: docker build -t loanrisk-scan:ci .
+      - name: Block high and critical vulnerabilities
+        uses: aquasecurity/trivy-action@0.33.1
         with:
           image-ref: loanrisk-scan:ci
           format: table
           exit-code: 1
           ignore-unfixed: true
           severity: CRITICAL,HIGH
-      - uses: aquasecurity/trivy-action@0.33.1
+      - name: Generate SPDX SBOM
+        uses: aquasecurity/trivy-action@0.33.1
         with:
           image-ref: loanrisk-scan:ci
           format: spdx-json
           output: sbom.spdx.json
-      - uses: actions/upload-artifact@v4
+      - name: Upload SPDX SBOM
+        uses: actions/upload-artifact@v4
         with:
           name: sbom-spdx
           path: sbom.spdx.json
