@@ -1,18 +1,48 @@
 name: Security
+
 on:
   push:
   pull_request:
-  schedule: [{cron: '41 4 * * 1'}]
-permissions: {contents: read, security-events: write}
+  schedule:
+    - cron: "41 4 * * 1"
+
+permissions:
+  contents: read
+  security-events: write
+
+concurrency:
+  group: security-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
 jobs:
   scan:
     runs-on: ubuntu-latest
+    timeout-minutes: 20
     steps:
-      - uses: actions/checkout@v4
-        with: {fetch-depth: 0}
-      - uses: gitleaks/gitleaks-action@v2
-      - uses: aquasecurity/trivy-action@master
-        with: {scan-type: fs, scan-ref: ., format: sarif, output: trivy-results.sarif, ignore-unfixed: true, severity: 'HIGH,CRITICAL', exit-code: '1'}
-      - uses: github/codeql-action/upload-sarif@v3
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Scan repository with Gitleaks
+        uses: gitleaks/gitleaks-action@v2
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Scan filesystem with Trivy
         if: always()
-        with: {sarif_file: trivy-results.sarif}
+        uses: aquasecurity/trivy-action@0.33.1
+        with:
+          scan-type: fs
+          scan-ref: .
+          format: sarif
+          output: trivy-results.sarif
+          ignore-unfixed: true
+          severity: HIGH,CRITICAL
+          exit-code: "1"
+
+      - name: Upload Trivy SARIF
+        if: always() && hashFiles('trivy-results.sarif') != ''
+        uses: github/codeql-action/upload-sarif@v3
+        with:
+          sarif_file: trivy-results.sarif
