@@ -4,7 +4,7 @@ from __future__ import annotations
 
 from typing import Annotated, Literal
 
-from pydantic import BaseModel, ConfigDict, Field
+from pydantic import AwareDatetime, BaseModel, ConfigDict, Field
 
 
 class LoanRequest(BaseModel):
@@ -39,4 +39,4 @@ class FeedbackRequest(BaseModel):
 
     request_id: str = Field(min_length=8, max_length=128)
     outcome: Literal["reviewed", "approved", "declined", "defaulted", "repaid"]
-    observed_at: str
+    observed_at: AwareDatetime

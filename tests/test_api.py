@@ -49,6 +49,21 @@ def test_request_contract_rejects_invalid_and_extra_values(tmp_path):
         assert client.post("/predict", json=bad).status_code == 422
 
 
+def test_feedback_requires_a_timezone_aware_timestamp(tmp_path):
+    app = create_app(bundle_path=create_test_bundle(tmp_path / "bundle"))
+    with TestClient(app) as client:
+        response = client.post(
+            "/feedback",
+            json={
+                "request_id": "request-123",
+                "outcome": "reviewed",
+                "observed_at": "not-a-timestamp",
+            },
+        )
+
+    assert response.status_code == 422
+
+
 def test_production_requires_authentication_and_model(monkeypatch, tmp_path):
     monkeypatch.setenv("ENVIRONMENT", "production")
     monkeypatch.delenv("LOAN_RISK_API_KEY", raising=False)

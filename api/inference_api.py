@@ -193,7 +193,7 @@ def create_app(
                     "request_id": payload.request_id,
                     "model_version": manifest.model_version,
                     "outcome": payload.outcome,
-                    "observed_at": payload.observed_at,
+                    "observed_at": payload.observed_at.isoformat(),
                 }
             )
         )
