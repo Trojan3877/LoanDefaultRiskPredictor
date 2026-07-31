@@ -1,107 +1,126 @@
 # Loan Default Risk Predictor
 
-<p align="center"><strong>A governed, versioned LightGBM research pipeline with verified model-backed serving.</strong></p>
+[![CI](https://github.com/CoreyLeath-code/LoanDefaultRiskPredictor/actions/workflows/ci.yml/badge.svg?branch=main)](https://github.com/CoreyLeath-code/LoanDefaultRiskPredictor/actions/workflows/ci.yml)
+[![License](https://img.shields.io/github/license/CoreyLeath-code/LoanDefaultRiskPredictor)](LICENSE)
 
-<p align="center">
-  <a href="https://github.com/CoreyLeath-code/LoanDefaultRiskPredictor/actions/workflows/ci.yml"><img src="https://github.com/CoreyLeath-code/LoanDefaultRiskPredictor/actions/workflows/ci.yml/badge.svg?branch=main" alt="L5 quality"></a>
-  <a href="https://github.com/CoreyLeath-code/LoanDefaultRiskPredictor/actions/workflows/container-scan.yml"><img src="https://github.com/CoreyLeath-code/LoanDefaultRiskPredictor/actions/workflows/container-scan.yml/badge.svg?branch=main" alt="Container security"></a>
-  <a href="https://github.com/CoreyLeath-code/LoanDefaultRiskPredictor/actions/workflows/docker-publish.yml"><img src="https://github.com/CoreyLeath-code/LoanDefaultRiskPredictor/actions/workflows/docker-publish.yml/badge.svg" alt="Signed release"></a>
-  <a href="https://github.com/CoreyLeath-code/LoanDefaultRiskPredictor/actions/workflows/docs-deploy.yml"><img src="https://github.com/CoreyLeath-code/LoanDefaultRiskPredictor/actions/workflows/docs-deploy.yml/badge.svg?branch=main" alt="Documentation"></a>
-</p>
+Loan Default Risk Predictor is a research-oriented LightGBM pipeline and model-backed FastAPI service. It demonstrates traceable model packaging, input validation, and serving controls for experimentation with loan-risk data.
 
-<p align="center">
-  <img src="https://img.shields.io/badge/Python-3.11%20%7C%203.12-3776AB?logo=python&logoColor=white" alt="Python">
-  <img src="https://img.shields.io/badge/LightGBM-credit%20risk-2F855A" alt="LightGBM">
-  <img src="https://img.shields.io/badge/FastAPI-model--backed-009688?logo=fastapi" alt="FastAPI">
-  <img src="https://img.shields.io/badge/Coverage%20gate-75%25-16A34A" alt="Coverage gate">
-  <img src="https://img.shields.io/badge/Artifact-SHA--256%20verified-6C5CE7" alt="Artifact integrity">
-  <img src="https://img.shields.io/badge/Container-non--root-2496ED?logo=docker&logoColor=white" alt="Container">
-  <a href="LICENSE"><img src="https://img.shields.io/badge/License-MIT-yellow" alt="MIT"></a>
-</p>
+> This repository is **not an approved credit-decision system**. Do not use it to make lending decisions without representative-data validation, fair-lending and calibration review, privacy and legal approval, human oversight, and environment-specific security controls.
 
-> **Important:** this is a production-candidate engineering demonstration, not an approved credit-decision system. It must not be used for lending decisions without representative-data validation, fair-lending and calibration review, privacy/legal approval, human oversight, and environment-specific security controls.
+## Implemented capabilities
 
-
-## Production Readiness Guide
-
-> This section is the portfolio audit entry point for **LoanDefaultRiskPredictor**. It describes an engineering promotion path; it is not a claim that the repository is already production-authorized.
-
-[![CI](https://img.shields.io/github/actions/workflow/status/CoreyLeath-code/LoanDefaultRiskPredictor/ci.yml?branch=main&label=CI)](https://github.com/CoreyLeath-code/LoanDefaultRiskPredictor/actions) [![License](https://img.shields.io/github/license/CoreyLeath-code/LoanDefaultRiskPredictor)](https://github.com/CoreyLeath-code/LoanDefaultRiskPredictor/blob/main/LICENSE)
-
-### Architecture flowchart
-
-```mermaid
-flowchart LR
-    Client --> Gateway --> Services[API + workers] --> Events[(Event bus)] --> Store[(State)]
-```
-
-### Quickstart and local validation
-
-The supported local path should be reproducible from a clean checkout. The inferred stack for this repository is **Python/platform services**.
-
-```bash
-python -m venv .venv && source .venv/bin/activate && pip install -r requirements.txt
-pytest -q
-```
-
-If the project uses external services, model artifacts, cloud credentials, or private data, start them through documented local fixtures or mocks. Never place secrets or identifiable records in the repository.
-
-### Research-style metrics and benchmarks
-
-| Evidence | Required record |
-|---|---|
-| Correctness | Test command, commit SHA, runtime, and pass/fail result |
-| Performance | Warm-up, sample count, concurrency, median, p95, p99, throughput, and memory |
-| Data/model quality | Dataset version, split strategy, leakage controls, calibration, subgroup results, and uncertainty |
-| Runtime | Image digest, health-check latency, resource limits, and rollback target |
-| Security | Dependency, secret, SAST, container, and SBOM results |
-
-A benchmark number belongs in a versioned artifact tied to a commit and hardware/runtime description. Engineering benchmarks must not be presented as clinical, financial, safety, or model-quality validation without the appropriate domain evidence.
-
-### Extended Q&A
-
-**What is production-ready for this repository?**  
-A reproducible build, tested public contract, controlled configuration, observable runtime, documented security boundary, versioned artifacts, and a tested rollback path.
-
-**What must remain explicit?**  
-The intended use, excluded use, data/credential handling, model or algorithm limitations, and which metrics are measured versus aspirational.
-
-**What should be completed next?**  
-Use the linked production-readiness issue for this repository as the checklist. Resolve missing tests, deployment instructions, observability, supply-chain controls, and release evidence before attaching a production claim.
-
-
-## What changed
-
-The repository now has one supported path from a raw, validated loan request to a traceable model response. Training and serving share the fitted feature pipeline, threshold, schema version, metrics, lineage, and checksum manifest. Production startup fails when authentication or a verified model is unavailable.
-
-## Engineering features
-
-- Strict raw-feature contracts with bounds, enums, unknown-field rejection, and no borrower-name field.
-- Training-only fitted encoders and deterministic seeds; identifiers never enter model features.
-- Out-of-time splitting when `issue_d` is present, with an explicit random fallback for undated research data.
-- LightGBM candidate compared with logistic regression on the untouched holdout.
-- ROC-AUC, PR-AUC, Brier score, log loss, ECE, operating-point metrics, confusion counts, and bootstrap ROC-AUC interval.
-- Offline group-slice metrics with minimum cohort size; protected fields remain outside model inputs.
-- Immutable bundle manifest with model/preprocessor, threshold, model/policy/schema versions, dataset fingerprint, commit, metrics, and SHA-256.
-- Model-aware readiness, API-key option, rate limiting, admission control, security headers, and privacy-minimized audit/feedback events.
-- Prometheus request, latency, prediction, feedback, saturation, and model-version signals.
-- Non-root/read-only container and Kubernetes probes, limits, seccomp, dropped capabilities, secret reference, and read-only model mount.
-- Python 3.11/3.12 CI, 75% coverage floor, Ruff, mypy, Bandit, dependency audit, container smoke inference, and manifest validation.
+- Leakage-conscious feature engineering, training-only fitted transformations, and identifier exclusion.
+- A versioned model bundle with a SHA-256 manifest, threshold, policy version, dataset identifier, and training metadata.
+- Model-backed `POST /predict`; serving starts only with a verified bundle in production.
+- Strict loan-request validation and deterministic reason-code placeholders for research review.
+- API-key support, in-process rate limiting, bounded concurrency, security headers, readiness, and Prometheus metrics.
+- Feedback capture with a required timezone-aware observation timestamp.
+- API, artifact-integrity, data-contract, metrics, and training-pipeline tests.
 
 ## Architecture
 
-```text
-versioned cohort -> strict data contract -> chronological split
-       |                                      |
-       v                                      v
-training-only transforms -> LightGBM + logistic baseline -> research report
-       |
-       v
-weights + transforms + threshold + lineage + metrics + SHA-256 manifest
-       |
-       v
-startup verification -> auth -> rate/admission -> transform -> score -> policy routing
-                                                              |          |
-                                                 Prometheus + audit + feedback
-```…2273 tokens truncated…provals are separate from the source-code license.
-# [![CI](https://github.com/CoreyLeath-code/LoanDefaultRiskPredictor/actions/workflows/ci.yml/badge.svg?branch=docs%2Fportfolio-readme-production-loandefaultriskpredictor)](https://github.com/CoreyLeath-code/LoanDefaultRiskPredictor/actions/workflows/ci.yml) [![Container](https://github.com/CoreyLeath-code/LoanDefaultRiskPredictor/actions/workflows/container-scan.yml/badge.svg?branch=docs%2Fportfolio-readme-production-loandefaultriskpredictor)](https://github.com/CoreyLeath-code/LoanDefaultRiskPredictor/actions/workflows/container-scan.yml)
+```mermaid
+flowchart LR
+    Data["Versioned research data"] --> Train["Training-only feature fitting"]
+    Train --> Bundle["Model + transforms + manifest + SHA-256"]
+    Bundle --> Verify["Startup verification"]
+    Client --> Contract["Strict loan request"]
+    Contract --> Controls["Auth, rate limit, admission"]
+    Controls --> Score["Transform and score"]
+    Verify --> Score
+    Score --> Response["Research risk response"]
+    Score --> Metrics["Prometheus and privacy-minimized audit events"]
+```
+
+The supported service is [`api/inference_api.py`](api/inference_api.py). Training and bundle handling are implemented under [`src/`](src/).
+
+## Quick start
+
+Python 3.11 and 3.12 are the CI-supported versions.
+
+```bash
+python -m venv .venv
+# macOS/Linux
+. .venv/bin/activate
+# Windows PowerShell: .\.venv\Scripts\Activate.ps1
+
+python -m pip install --upgrade pip
+python -m pip install -r requirements/dev.txt
+python -m pytest -q
+```
+
+The CI-only bundle command makes a deterministic local artifact for API experiments; it is not a validated lending model.
+
+```bash
+python -m scripts.build_smoke_bundle --output models/ci
+MODEL_BUNDLE_PATH=models/ci LOAN_RISK_API_KEY=local-dev \
+  uvicorn api.inference_api:app --reload
+```
+
+In Windows PowerShell:
+
+```powershell
+python -m scripts.build_smoke_bundle --output models/ci
+$env:MODEL_BUNDLE_PATH = "models/ci"
+$env:LOAN_RISK_API_KEY = "local-dev"
+uvicorn api.inference_api:app --reload
+```
+
+## API contract
+
+| Endpoint | Purpose |
+|---|---|
+| `GET /healthz` | Process liveness |
+| `GET /readyz` | Verified model-bundle readiness |
+| `GET /metrics` | Prometheus exposition format |
+| `POST /predict` | Model-backed research prediction |
+| `POST /feedback` | Record an observed research outcome |
+
+`POST /predict` requires the validated raw loan fields defined by [`LoanRequest`](api/schemas.py). Unknown fields are rejected. When `LOAN_RISK_API_KEY` is configured, pass it via `X-API-Key`. A successful response is a research signal with a model and policy version; it is not an approval, denial, or adverse-action notice.
+
+`POST /feedback` accepts an outcome and an ISO 8601 timestamp with a timezone, for example `2026-07-22T00:00:00Z`. The service rejects malformed or timezone-naive timestamps so outcome records have unambiguous temporal context.
+
+## Configuration
+
+| Variable | Default | Purpose |
+|---|---|---|
+| `MODEL_BUNDLE_PATH` | `models/current` | Directory containing `manifest.json` and the checksummed model bundle. |
+| `LOAN_RISK_API_KEY` | unset | Enables API-key validation; mandatory when `ENVIRONMENT=production`. |
+| `ENVIRONMENT` | `development` | In production, missing or invalid model bundles fail startup. |
+
+The model bundle contains joblib-serialized objects. Treat its source path as administrator-controlled and do not load untrusted artifacts.
+
+## Verification and reproducibility
+
+The CI workflow runs a Python 3.11/3.12 matrix with syntax checks, Ruff, mypy, Bandit, coverage enforcement, dependency audit, and a model-backed container readiness smoke test. It uploads coverage artifacts for each Python version.
+
+Run the critical serving checks locally:
+
+```bash
+python -m pytest -q tests/test_api.py tests/test_artifacts.py
+python -m compileall -q api src evaluation tests scripts
+ruff check api src evaluation tests scripts
+```
+
+Training and evaluation commands are intentionally separate from serving because model performance must be evaluated against a versioned, representative dataset. See [`docs/MODEL_CARD.md`](docs/MODEL_CARD.md), [`docs/GOVERNANCE.md`](docs/GOVERNANCE.md), and [`metrics.md`](metrics.md) for research and governance context.
+
+## Security and data boundaries
+
+- Input schemas reject unknown fields and enforce physical bounds for request fields.
+- Model checksum verification occurs before deserialization.
+- API responses use `Cache-Control: no-store`; audit events omit raw borrower feature values.
+- Rate limiting and concurrency admission are local controls; use a managed gateway for distributed enforcement.
+- Never commit customer data, secrets, private keys, or real model artifacts.
+
+## Limitations and next work
+
+- No model-quality, fairness, or calibration claim is valid without a documented, representative evaluation dataset and independent review.
+- Reason codes are deterministic placeholders and are not approved adverse-action reasons.
+- The in-process rate limiter is unsuitable as the sole production abuse-control mechanism.
+- Production use requires model-risk, fair-lending, privacy, security, and legal sign-off, plus monitored rollout and rollback procedures.
+
+See the open audit work in [issue #12](https://github.com/CoreyLeath-code/LoanDefaultRiskPredictor/issues/12).
+
+## License
+
+MIT. See [LICENSE](LICENSE).
