@@ -133,10 +133,12 @@ def main() -> None:
         df, trials=args.trials, seed=args.seed, test_size=args.test_size, threshold=args.threshold
     )
     dataset_id = dataset_fingerprint(source) if source.is_file() else f"external:{args.uri}"
+    training_commit = os.getenv("GITHUB_SHA", "local-uncommitted")
     record = {
         "schema_version": 2,
         "created_at": datetime.now(UTC).isoformat(),
         "dataset_id": dataset_id,
+        "training_commit": training_commit,
         "split_method": split_method,
         "rows": len(df),
         "train_rows": train_rows,
@@ -162,7 +164,7 @@ def main() -> None:
         model_version=args.model_version,
         threshold=args.threshold,
         dataset_id=dataset_id,
-        training_commit=os.getenv("GITHUB_SHA", "local-uncommitted"),
+        training_commit=training_commit,
         metrics=metrics,
     )
     metrics_path = pathlib.Path(args.metrics_output)
