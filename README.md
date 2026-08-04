@@ -104,6 +104,51 @@ ruff check api src evaluation tests scripts
 
 Training and evaluation commands are intentionally separate from serving because model performance must be evaluated against a versioned, representative dataset. See [`docs/MODEL_CARD.md`](docs/MODEL_CARD.md), [`docs/GOVERNANCE.md`](docs/GOVERNANCE.md), and [`metrics.md`](metrics.md) for research and governance context.
 
+## Research benchmark protocol
+
+### Offline candidate evidence
+
+This repository deliberately publishes **no dataset-specific quality number**. A result is valid only when it is regenerated from a versioned, permitted dataset at the commit under review. The training command emits a self-describing `outputs/metrics.json` record so candidate and baseline evidence can be inspected without relying on README claims.
+
+| Evidence | Repository implementation | Recorded output |
+|---|---|---|
+| Cohort split | Uses an out-of-time split when `issue_d` exists; otherwise uses a seeded stratified split. | `split_method`, `rows`, `train_rows`, `test_rows` |
+| Candidate comparison | Compares the LightGBM candidate with a logistic-regression baseline on the same holdout. | `candidate_metrics`, `logistic_regression_baseline` |
+| Discrimination and probability quality | Calculates ROC-AUC, PR-AUC, Brier score, log loss, expected calibration error, and a seeded 100-sample ROC-AUC bootstrap interval. | Metric values and `roc_auc_ci95_low`/`roc_auc_ci95_high` |
+| Operating point | Calculates accuracy, precision, recall, F1, threshold, and confusion counts. | Metric values and `protocol.threshold` |
+| Reproducibility context | Captures data fingerprint, commit, split seed, trial count, Python/package versions, and wall-clock training time. | `dataset_id`, `protocol`, `environment`, `training_seconds` and bundle manifest |
+
+To reproduce an offline record, use an approved versioned dataset and retain both the Git commit and resulting JSON. The default seed, test fraction, and threshold below are explicit experiment settings—not quality claims.
+
+```bash
+git rev-parse HEAD
+python -m src.train \
+  --uri /path/to/versioned-loans.csv \
+  --trials 20 \
+  --seed 2025 \
+  --test-size 0.2 \
+  --threshold 0.5 \
+  --output models/candidate \
+  --metrics-output outputs/metrics.json \
+  --model-version candidate-local
+```
+
+Never compare results from different dataset fingerprints, split methods, seeds, thresholds, or package versions as though they were the same experiment. Review calibration, cohort evidence, and fair-lending obligations separately before any real-world use.
+
+### Online service telemetry
+
+The API exposes operational counters and histograms at `GET /metrics`. These are observability signals, not model-performance metrics; do not use borrower attributes or group identities as labels.
+
+| Prometheus metric | What it measures | Labels |
+|---|---|---|
+| `loan_risk_requests_total` | Completed requests by route and response code. | `route`, `status` |
+| `loan_risk_request_duration_seconds` | Request-latency histogram for the observed route. | `route` |
+| `loan_risk_in_flight` | Requests currently holding inference admission. | none |
+| `loan_risk_predictions_total` | Completed predictions by model version and review recommendation. | `review`, `model_version` |
+| `loan_risk_feedback_total` | Accepted feedback by outcome and model version. | `outcome`, `model_version` |
+
+Use these signals to detect service degradation and version mix. Establish latency, availability, drift, calibration, and fairness thresholds only in a governed deployment with an approved monitoring plan.
+
 ## Security and data boundaries
 
 - Input schemas reject unknown fields and enforce physical bounds for request fields.
