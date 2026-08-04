@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import json
 import logging
+import math
 import os
 import time
 import uuid
@@ -31,9 +32,16 @@ IN_FLIGHT = Gauge("loan_risk_in_flight", "In-flight model requests")
 
 
 def _score(model: Any, frame: pd.DataFrame) -> float:
-    if hasattr(model, "predict_proba"):
-        return float(model.predict_proba(frame)[0, 1])
-    return float(model.predict(frame)[0])
+    try:
+        prediction = (
+            model.predict_proba(frame)[0, 1] if hasattr(model, "predict_proba") else model.predict(frame)[0]
+        )
+        probability = float(prediction)
+    except (AttributeError, IndexError, KeyError, TypeError, ValueError) as exc:
+        raise ValueError("Model returned an invalid prediction") from exc
+    if not math.isfinite(probability):
+        raise ValueError("Model returned a non-finite prediction")
+    return probability
 
 
 def _reason_codes(raw: LoanRequest) -> list[str]:
@@ -142,13 +150,19 @@ def create_app(
             raise HTTPException(status.HTTP_503_SERVICE_UNAVAILABLE, "Inference capacity exhausted")
         IN_FLIGHT.inc()
         try:
-            raw = pd.DataFrame([payload.model_dump()])
-            transformed = bundle["feature_engineer"].transform(raw)
-            probability = min(1.0, max(0.0, _score(bundle["model"], transformed)))
-        except (KeyError, TypeError, ValueError) as exc:
-            raise HTTPException(
-                status.HTTP_422_UNPROCESSABLE_ENTITY, "Feature transformation failed"
-            ) from exc
+            try:
+                raw = pd.DataFrame([payload.model_dump()])
+                transformed = bundle["feature_engineer"].transform(raw)
+            except (KeyError, TypeError, ValueError) as exc:
+                raise HTTPException(
+                    status.HTTP_422_UNPROCESSABLE_ENTITY, "Feature transformation failed"
+                ) from exc
+            try:
+                probability = min(1.0, max(0.0, _score(bundle["model"], transformed)))
+            except (AttributeError, IndexError, KeyError, TypeError, ValueError, OverflowError) as exc:
+                raise HTTPException(
+                    status.HTTP_503_SERVICE_UNAVAILABLE, "Model scoring unavailable"
+                ) from exc
         finally:
             IN_FLIGHT.dec()
             admission.release()

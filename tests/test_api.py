@@ -42,6 +42,19 @@ def test_readiness_fails_without_verified_model(tmp_path):
         assert client.post("/predict", json=valid_request()).status_code == 503
 
 
+def test_malformed_model_output_is_sanitized(tmp_path, monkeypatch):
+    def malformed_score(*_args):
+        raise IndexError("missing class probability")
+
+    monkeypatch.setattr("api.inference_api._score", malformed_score)
+    app = create_app(bundle_path=create_test_bundle(tmp_path / "bundle"))
+    with TestClient(app) as client:
+        response = client.post("/predict", json=valid_request())
+
+    assert response.status_code == 503
+    assert response.json() == {"detail": "Model scoring unavailable"}
+
+
 def test_request_contract_rejects_invalid_and_extra_values(tmp_path):
     app = create_app(bundle_path=create_test_bundle(tmp_path / "bundle"))
     bad = {**valid_request(), "dti": -1, "borrower_name": "must-not-be-accepted"}
