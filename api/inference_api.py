@@ -34,13 +34,15 @@ IN_FLIGHT = Gauge("loan_risk_in_flight", "In-flight model requests")
 def _score(model: Any, frame: pd.DataFrame) -> float:
     try:
         prediction = (
-            model.predict_proba(frame)[0, 1] if hasattr(model, "predict_proba") else model.predict(frame)[0]
+            model.predict_proba(frame)[0, 1]
+            if hasattr(model, "predict_proba")
+            else model.predict(frame)[0]
         )
         probability = float(prediction)
     except (AttributeError, IndexError, KeyError, TypeError, ValueError) as exc:
         raise ValueError("Model returned an invalid prediction") from exc
-    if not math.isfinite(probability):
-        raise ValueError("Model returned a non-finite prediction")
+    if not math.isfinite(probability) or not 0.0 <= probability <= 1.0:
+        raise ValueError("Model returned a probability outside [0, 1]")
     return probability
 
 
@@ -93,7 +95,7 @@ def create_app(
 
     application = FastAPI(
         title="Loan Default Risk Predictor",
-        version="1.0.0",
+        version="0.2.0",
         lifespan=lifespan,
         description="Model-backed research API. Not an automated lending decision system.",
     )
@@ -158,7 +160,7 @@ def create_app(
                     status.HTTP_422_UNPROCESSABLE_ENTITY, "Feature transformation failed"
                 ) from exc
             try:
-                probability = min(1.0, max(0.0, _score(bundle["model"], transformed)))
+                probability = _score(bundle["model"], transformed)
             except (AttributeError, IndexError, KeyError, TypeError, ValueError, OverflowError) as exc:
                 raise HTTPException(
                     status.HTTP_503_SERVICE_UNAVAILABLE, "Model scoring unavailable"
