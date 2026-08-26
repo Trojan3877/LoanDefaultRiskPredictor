@@ -10,13 +10,9 @@
       
       
       
-        <link rel="canonical" href="https://coreyleath-code.github.io/LoanDefaultRiskPredictor/latest/BENCHMARKS/">
+        <link rel="canonical" href="https://coreyleath-code.github.io/LoanDefaultRiskPredictor/latest/AUDIT/">
       
       
-        <link rel="prev" href="../MODEL_CARD/">
-      
-      
-        <link rel="next" href="../OPERATIONS/">
       
       
         
@@ -27,7 +23,7 @@
     
     
       
-        <title>Benchmarks - Loan Default Risk Predictor</title>
+        <title>L6 Engineering Audit — v0.2.0 - Loan Default Risk Predictor</title>
       
     
     
@@ -76,7 +72,7 @@
     <div data-md-component="skip">
       
         
-        <a href="#benchmark-protocol" class="md-skip">
+        <a href="#l6-engineering-audit-v020" class="md-skip">
           Skip to content
         </a>
       
@@ -116,7 +112,7 @@
         <div class="md-header__topic" data-md-component="header-topic">
           <span class="md-ellipsis">
             
-              Benchmarks
+              L6 Engineering Audit — v0.2.0
             
           </span>
         </div>
@@ -341,37 +337,10 @@
       
   
   
-    
   
   
-  
-    <li class="md-nav__item md-nav__item--active">
-      
-      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
-      
-      
-        
-      
-      
-        <label class="md-nav__link md-nav__link--active" for="__toc">
-          
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    Benchmarks
-  
-
-    
-  </span>
-  
-  
-
-          <span class="md-nav__icon md-icon"></span>
-        </label>
-      
-      <a href="./" class="md-nav__link md-nav__link--active">
+    <li class="md-nav__item">
+      <a href="../BENCHMARKS/" class="md-nav__link">
         
   
   
@@ -387,81 +356,6 @@
   
 
       </a>
-      
-        
-
-<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
-  
-  
-  
-    
-  
-  
-    <label class="md-nav__title" for="__toc">
-      <span class="md-nav__icon md-icon"></span>
-      Table of contents
-    </label>
-    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
-      
-        <li class="md-nav__item">
-  <a href="#purpose" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Purpose
-      
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#canonical-ci-command" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Canonical CI command
-      
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#evidence-schema" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Evidence schema
-      
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#comparison-rules" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Comparison rules
-      
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#interpretation" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Interpretation
-      
-    </span>
-  </a>
-  
-</li>
-      
-    </ul>
-  
-</nav>
-      
     </li>
   
 
@@ -547,10 +441,10 @@
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
       
         <li class="md-nav__item">
-  <a href="#purpose" class="md-nav__link">
+  <a href="#executive-assessment" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Purpose
+        Executive assessment
       
     </span>
   </a>
@@ -558,10 +452,10 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#canonical-ci-command" class="md-nav__link">
+  <a href="#scorecard" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Canonical CI command
+        Scorecard
       
     </span>
   </a>
@@ -569,10 +463,104 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#evidence-schema" class="md-nav__link">
+  <a href="#findings-and-treatments" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Evidence schema
+        Findings and treatments
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Findings and treatments">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#1-calibration-metric-naming-was-scientifically-imprecise" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        1. Calibration metric naming was scientifically imprecise
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#2-serving-silently-clamped-invalid-model-outputs" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        2. Serving silently clamped invalid model outputs
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#3-training-evidence-did-not-record-every-advertised-protocol-field" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        3. Training evidence did not record every advertised protocol field
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#4-ci-evidence-was-stronger-than-the-enforced-coverage-floor" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        4. CI evidence was stronger than the enforced coverage floor
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#5-benchmark-output-was-human-readable-but-weak-as-an-evidence-artifact" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        5. Benchmark output was human-readable but weak as an evidence artifact
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#6-release-engineering-did-not-create-an-auditable-github-release" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        6. Release engineering did not create an auditable GitHub Release
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#7-version-claims-conflicted" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        7. Version claims conflicted
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#merge-gate" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Merge gate
       
     </span>
   </a>
@@ -580,10 +568,10 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#comparison-rules" class="md-nav__link">
+  <a href="#release-gate" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Comparison rules
+        Release gate
       
     </span>
   </a>
@@ -591,10 +579,10 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#interpretation" class="md-nav__link">
+  <a href="#remaining-p0-risk" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Interpretation
+        Remaining P0 risk
       
     </span>
   </a>
@@ -621,45 +609,134 @@
   
 
 
-<h1 id="benchmark-protocol">Benchmark Protocol<a class="headerlink" href="#benchmark-protocol" title="Permanent link">&para;</a></h1>
-<h2 id="purpose">Purpose<a class="headerlink" href="#purpose" title="Permanent link">&para;</a></h2>
-<p><code>benchmarks/inference.py</code> measures one narrow engineering path: batch-1 feature transformation plus local model inference in a single Python process using the deterministic synthetic smoke bundle. It is designed to make plumbing/performance observations reproducible enough to compare like-for-like CI runs.</p>
-<p>It does <strong>not</strong> measure HTTP/network/TLS overhead, concurrency, queueing, multi-worker behavior, representative LightGBM performance, model quality, production capacity, availability, or an SLO.</p>
-<h2 id="canonical-ci-command">Canonical CI command<a class="headerlink" href="#canonical-ci-command" title="Permanent link">&para;</a></h2>
-<div class="highlight"><pre><span></span><code>python<span class="w"> </span>-m<span class="w"> </span>benchmarks.inference<span class="w"> </span><span class="se">\</span>
-<span class="w">  </span>--iterations<span class="w"> </span><span class="m">1000</span><span class="w"> </span><span class="se">\</span>
-<span class="w">  </span>--warmup<span class="w"> </span><span class="m">100</span><span class="w"> </span><span class="se">\</span>
-<span class="w">  </span>--output<span class="w"> </span>outputs/ci-inference-benchmark.json
-</code></pre></div>
-<h2 id="evidence-schema">Evidence schema<a class="headerlink" href="#evidence-schema" title="Permanent link">&para;</a></h2>
-<p>The JSON record contains:</p>
+<h1 id="l6-engineering-audit-v020">L6 Engineering Audit — v0.2.0<a class="headerlink" href="#l6-engineering-audit-v020" title="Permanent link">&para;</a></h1>
+<p>Audit target: <code>CoreyLeath-code/LoanDefaultRiskPredictor</code></p>
+<p>Baseline reviewed: <code>cbf5ee6f0524b98f1616ba4e0b75f192462cdccd</code></p>
+<h2 id="executive-assessment">Executive assessment<a class="headerlink" href="#executive-assessment" title="Permanent link">&para;</a></h2>
+<p>The repository has a credible senior-engineering foundation because it separates engineering evidence from regulated model-quality claims. Its strongest areas are model-artifact integrity, fail-closed serving, explicit research boundaries, CI/security coverage, and container/Kubernetes validation. The v0.2.0 audit focuses on scientific precision, release integrity, and reproducible evidence rather than adding unsupported maturity claims.</p>
+<h2 id="scorecard">Scorecard<a class="headerlink" href="#scorecard" title="Permanent link">&para;</a></h2>
+<table>
+<thead>
+<tr>
+<th>Area</th>
+<th>Assessment</th>
+<th>Evidence / remaining gap</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>API contract and failure handling</td>
+<td>Strong</td>
+<td>Strict request validation, verified bundle readiness, auth requirement in production, bounded admission, sanitized scoring failures</td>
+</tr>
+<tr>
+<td>Model artifact integrity</td>
+<td>Strong</td>
+<td>SHA-256 verified before joblib deserialization; path confinement; administrator-controlled source required</td>
+</tr>
+<tr>
+<td>Test discipline</td>
+<td>Strong</td>
+<td>Baseline 20/20 tests and 81.79% branch coverage; v0.2.0 raises CI floor to 80% and adds contract tests</td>
+</tr>
+<tr>
+<td>Evaluation methodology</td>
+<td>Good / improving</td>
+<td>Candidate vs logistic baseline, temporal-preferred split, bootstrap interval; v0.2.0 corrects ECE to sample-weighted form</td>
+</tr>
+<tr>
+<td>Reproducibility</td>
+<td>Good procedure, not byte-exact</td>
+<td>Dataset fingerprinting/recorded environment; dependency specs use bounded ranges rather than hash locks</td>
+</tr>
+<tr>
+<td>Observability</td>
+<td>Good</td>
+<td>Request/latency/in-flight/prediction/feedback metrics and privacy-minimized audit events</td>
+</tr>
+<tr>
+<td>Security</td>
+<td>Good</td>
+<td>CodeQL, Gitleaks, Bandit, pip-audit, Trivy filesystem/image scanning, non-root container</td>
+</tr>
+<tr>
+<td>Supply chain</td>
+<td>Stronger in v0.2.0</td>
+<td>SPDX SBOM, semantic + immutable GHCR tags, keyless Cosign signing, release checksums</td>
+</tr>
+<tr>
+<td>Container / Kubernetes</td>
+<td>Good</td>
+<td>Non-root UID, read-only smoke run, Compose validation, strict kubeconform validation</td>
+</tr>
+<tr>
+<td>Distributed-systems maturity</td>
+<td>Partial</td>
+<td>Rate limiter and admission are process-local; external identity and shared control plane are deployment concerns</td>
+</tr>
+<tr>
+<td>Performance evidence</td>
+<td>Scoped and reproducible</td>
+<td>Synthetic local microbenchmark only; no HTTP/network/concurrency/SLO claim</td>
+</tr>
+<tr>
+<td>Model-quality evidence</td>
+<td>Not release-qualified for lending</td>
+<td>No representative approved dataset bundled; no real-world quality claim</td>
+</tr>
+<tr>
+<td>Fair-lending / regulatory approval</td>
+<td>Not established</td>
+<td>Explicitly requires independent model-risk, fair-lending, privacy, legal, and policy review</td>
+</tr>
+</tbody>
+</table>
+<h2 id="findings-and-treatments">Findings and treatments<a class="headerlink" href="#findings-and-treatments" title="Permanent link">&para;</a></h2>
+<h3 id="1-calibration-metric-naming-was-scientifically-imprecise">1. Calibration metric naming was scientifically imprecise<a class="headerlink" href="#1-calibration-metric-naming-was-scientifically-imprecise" title="Permanent link">&para;</a></h3>
+<p><strong>Finding:</strong> The previous <code>expected_calibration_error</code> used an unweighted mean of calibration-bin gaps. That is useful as a calibration-gap summary but is not the canonical sample-weighted ECE commonly expected by reviewers.</p>
+<p><strong>Treatment:</strong> v0.2.0 implements sample-weighted ECE over fixed-width probability bins and validates that probability inputs are finite and lie in <code>[0, 1]</code>.</p>
+<h3 id="2-serving-silently-clamped-invalid-model-outputs">2. Serving silently clamped invalid model outputs<a class="headerlink" href="#2-serving-silently-clamped-invalid-model-outputs" title="Permanent link">&para;</a></h3>
+<p><strong>Finding:</strong> The API previously clamped a score below 0 or above 1 into the probability interval. That can hide a broken model/scoring contract.</p>
+<p><strong>Treatment:</strong> v0.2.0 rejects non-finite and out-of-range scores and returns a sanitized service-unavailable response.</p>
+<h3 id="3-training-evidence-did-not-record-every-advertised-protocol-field">3. Training evidence did not record every advertised protocol field<a class="headerlink" href="#3-training-evidence-did-not-record-every-advertised-protocol-field" title="Permanent link">&para;</a></h3>
+<p><strong>Finding:</strong> README stated that <code>protocol.threshold</code> was recorded, but the JSON protocol object omitted the threshold even though it appeared in model metrics/manifest.</p>
+<p><strong>Treatment:</strong> v0.2.0 records <code>threshold</code> and <code>training_commit</code> explicitly in <code>outputs/metrics.json</code> and uses the same commit value in the model manifest.</p>
+<h3 id="4-ci-evidence-was-stronger-than-the-enforced-coverage-floor">4. CI evidence was stronger than the enforced coverage floor<a class="headerlink" href="#4-ci-evidence-was-stronger-than-the-enforced-coverage-floor" title="Permanent link">&para;</a></h3>
+<p><strong>Finding:</strong> Baseline branch coverage was 81.79%, while CI enforced only 75%.</p>
+<p><strong>Treatment:</strong> v0.2.0 raises the floor to 80%. The audit deliberately does not claim 90%+ because the measured code does not support that claim.</p>
+<h3 id="5-benchmark-output-was-human-readable-but-weak-as-an-evidence-artifact">5. Benchmark output was human-readable but weak as an evidence artifact<a class="headerlink" href="#5-benchmark-output-was-human-readable-but-weak-as-an-evidence-artifact" title="Permanent link">&para;</a></h3>
+<p><strong>Finding:</strong> The local microbenchmark omitted a commit, model checksum, input hash, memory observation, and machine-readable output path.</p>
+<p><strong>Treatment:</strong> v0.2.0 emits JSON with commit, environment, model checksum/version, input hash, workload, latency distribution, sequential throughput, traced Python memory, success count/rate, and explicit limitations. CI uploads the JSON artifact.</p>
+<h3 id="6-release-engineering-did-not-create-an-auditable-github-release">6. Release engineering did not create an auditable GitHub Release<a class="headerlink" href="#6-release-engineering-did-not-create-an-auditable-github-release" title="Permanent link">&para;</a></h3>
+<p><strong>Finding:</strong> The existing tag workflow only built/pushed a GHCR image and signed it. The current repository had no GitHub Release object.</p>
+<p><strong>Treatment:</strong> v0.2.0 adds an evidence-backed publisher that scans the release image, generates an SPDX SBOM, publishes semantic and immutable image tags, signs the digest with Cosign, generates checksums/evidence, and creates a GitHub Release. It refuses to mutate an existing tag.</p>
+<h3 id="7-version-claims-conflicted">7. Version claims conflicted<a class="headerlink" href="#7-version-claims-conflicted" title="Permanent link">&para;</a></h3>
+<p><strong>Finding:</strong> Package metadata reported <code>0.2.0</code> while FastAPI reported <code>1.0.0</code>.</p>
+<p><strong>Treatment:</strong> v0.2.0 aligns the service version with package/release version <code>0.2.0</code>.</p>
+<h2 id="merge-gate">Merge gate<a class="headerlink" href="#merge-gate" title="Permanent link">&para;</a></h2>
+<p>The audit PR must not merge until the relevant pull-request checks complete successfully. At minimum:</p>
 <ul>
-<li>schema version and UTC generation timestamp;</li>
-<li>source Git commit (<code>GITHUB_SHA</code> in CI);</li>
-<li>Python, OS/platform, and processor string;</li>
-<li>synthetic smoke model version and SHA-256;</li>
-<li>synthetic input SHA-256;</li>
-<li>warmup and measured iteration counts;</li>
-<li>latency mean, population standard deviation, p50, p95, p99, minimum, and maximum;</li>
-<li>sequential inferences per second;</li>
-<li>peak traced Python memory during the measured loop;</li>
-<li>success count and success rate;</li>
-<li>explicit benchmark limitations.</li>
+<li>Python 3.11 and 3.12 test jobs;</li>
+<li>Ruff, mypy, Bandit and runtime dependency audit;</li>
+<li>coverage &gt;= 80%;</li>
+<li>deployment/container smoke validation;</li>
+<li>Security workflow and CodeQL;</li>
+<li>container Trivy HIGH/CRITICAL gate if the Docker/runtime paths change.</li>
 </ul>
-<h2 id="comparison-rules">Comparison rules<a class="headerlink" href="#comparison-rules" title="Permanent link">&para;</a></h2>
-<p>Only compare observations when the important experimental conditions are compatible. At minimum retain:</p>
+<p>Any failing test or security gate is a release blocker; the correct response is to fix the implementation or evidence, not weaken the gate.</p>
+<h2 id="release-gate">Release gate<a class="headerlink" href="#release-gate" title="Permanent link">&para;</a></h2>
+<p>The release is acceptable only when:</p>
 <ol>
-<li>source commit;</li>
-<li>benchmark JSON artifact;</li>
-<li>Python/platform information;</li>
-<li>model checksum and model version;</li>
-<li>input checksum;</li>
-<li>warmup and sample counts.</li>
+<li>the audit PR is merged from a green head commit;</li>
+<li>main CI/security complete successfully on the released source;</li>
+<li>the release image passes the HIGH/CRITICAL Trivy gate;</li>
+<li>semantic and immutable GHCR tags resolve to the released source;</li>
+<li>a digest is signed with keyless Cosign;</li>
+<li>SBOM, release evidence, and checksums are attached to the GitHub Release;</li>
+<li>no README text converts synthetic benchmark observations into production or model-quality claims.</li>
 </ol>
-<p>A change in the model bundle, feature transformation, input, host class, Python version, or benchmark implementation can invalidate a direct comparison.</p>
-<h2 id="interpretation">Interpretation<a class="headerlink" href="#interpretation" title="Permanent link">&para;</a></h2>
-<p>The benchmark is a <strong>microbenchmark</strong>, not a service load test. A high sequential inference rate cannot be converted into API requests/second because the measured loop excludes request parsing, authentication, rate limiting, serialization, transport, concurrency contention, and infrastructure behavior.</p>
-<p>Before defining a latency SLO or capacity target, run target-image HTTP and concurrency tests against representative infrastructure and an approved model bundle. Record workload shape, concurrency, duration, warmup, failures, host/container resources, and percentile latency.</p>
+<h2 id="remaining-p0-risk">Remaining P0 risk<a class="headerlink" href="#remaining-p0-risk" title="Permanent link">&para;</a></h2>
+<p>The dominant remaining risk is not software plumbing; it is <strong>model qualification</strong>. No real-world lending quality, fairness, calibration suitability, adverse-action explainability, or regulatory approval should be asserted until a representative permitted dataset and independent governance process produce versioned evidence.</p>
 
 
 
@@ -682,7 +759,7 @@
     <span class="md-icon" title="Last update">
       <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M21 13.1c-.1 0-.3.1-.4.2l-1 1 2.1 2.1 1-1c.2-.2.2-.6 0-.8l-1.3-1.3c-.1-.1-.2-.2-.4-.2m-1.9 1.8-6.1 6V23h2.1l6.1-6.1zM12.5 7v5.2l4 2.4-1 1L11 13V7zM11 21.9c-5.1-.5-9-4.8-9-9.9C2 6.5 6.5 2 12 2c5.3 0 9.6 4.1 10 9.3-.3-.1-.6-.2-1-.2s-.7.1-1 .2C19.6 7.2 16.2 4 12 4c-4.4 0-8 3.6-8 8 0 4.1 3.1 7.5 7.1 7.9l-.1.2z"/></svg>
     </span>
-    <span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-date" title="August 26, 2026 14:24:27 UTC">August 26, 2026</span>
+    <span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-date" title="August 26, 2026 14:23:48 UTC">August 26, 2026</span>
   </span>
 
     
@@ -692,7 +769,7 @@
     <span class="md-icon" title="Created">
       <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M14.47 15.08 11 13V7h1.5v5.25l3.08 1.83c-.41.28-.79.62-1.11 1m-1.39 4.84c-.36.05-.71.08-1.08.08-4.42 0-8-3.58-8-8s3.58-8 8-8 8 3.58 8 8c0 .37-.03.72-.08 1.08.69.1 1.33.32 1.92.64.1-.56.16-1.13.16-1.72 0-5.5-4.5-10-10-10S2 6.5 2 12s4.47 10 10 10c.59 0 1.16-.06 1.72-.16-.32-.59-.54-1.23-.64-1.92M18 15v3h-3v2h3v3h2v-3h3v-2h-3v-3z"/></svg>
     </span>
-    <span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-date" title="July 22, 2026 23:23:38 UTC">July 22, 2026</span>
+    <span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-date" title="August 26, 2026 14:23:48 UTC">August 26, 2026</span>
   </span>
 
     

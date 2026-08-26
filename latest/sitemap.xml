@@ -2,30 +2,34 @@
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
     <url>
          <loc>https://coreyleath-code.github.io/LoanDefaultRiskPredictor/latest/</loc>
-         <lastmod>2026-07-22</lastmod>
+         <lastmod>2026-08-26</lastmod>
+    </url>
+    <url>
+         <loc>https://coreyleath-code.github.io/LoanDefaultRiskPredictor/latest/AUDIT/</loc>
+         <lastmod>2026-08-26</lastmod>
     </url>
     <url>
          <loc>https://coreyleath-code.github.io/LoanDefaultRiskPredictor/latest/BENCHMARKS/</loc>
-         <lastmod>2026-07-22</lastmod>
+         <lastmod>2026-08-26</lastmod>
     </url>
     <url>
          <loc>https://coreyleath-code.github.io/LoanDefaultRiskPredictor/latest/GOVERNANCE/</loc>
-         <lastmod>2026-07-22</lastmod>
+         <lastmod>2026-08-26</lastmod>
     </url>
     <url>
          <loc>https://coreyleath-code.github.io/LoanDefaultRiskPredictor/latest/L5_ENGINEERING_QUALITY/</loc>
-         <lastmod>2026-07-22</lastmod>
+         <lastmod>2026-08-26</lastmod>
     </url>
     <url>
          <loc>https://coreyleath-code.github.io/LoanDefaultRiskPredictor/latest/MODEL_CARD/</loc>
-         <lastmod>2026-07-22</lastmod>
+         <lastmod>2026-08-26</lastmod>
     </url>
     <url>
          <loc>https://coreyleath-code.github.io/LoanDefaultRiskPredictor/latest/OPERATIONS/</loc>
-         <lastmod>2026-07-22</lastmod>
+         <lastmod>2026-08-26</lastmod>
     </url>
     <url>
          <loc>https://coreyleath-code.github.io/LoanDefaultRiskPredictor/latest/architecture/</loc>
-         <lastmod>2026-07-22</lastmod>
+         <lastmod>2026-08-26</lastmod>
     </url>
 </urlset>
