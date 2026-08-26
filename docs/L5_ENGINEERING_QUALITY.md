@@ -4,7 +4,7 @@ L5 means the repository demonstrates system ownership through explicit contracts
 
 | Domain | Automated evidence | Owner response |
 |---|---|---|
-| Correctness | strict schemas, model-backed E2E tests, >=75% branch-aware coverage | fix or revert |
+| Correctness | strict schemas, model-backed E2E tests, >=80% branch-aware coverage | fix or revert |
 | Research validity | temporal-preferred split, baseline, calibration/ranking metrics, uncertainty | invalidate unsupported report |
 | Artifact integrity | schema validation and SHA-256 before deserialization | reject/revoke bundle |
 | Security | Ruff, mypy, Bandit, pip-audit, non-root/read-only runtime | patch or time-bound exception |

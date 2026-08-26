@@ -22,6 +22,7 @@ from starlette.responses import Response
 from api.controls import SlidingWindowRateLimiter, valid_api_key
 from api.schemas import FeedbackRequest, LoanRequest, PredictionResponse
 from src.artifacts import ModelManifest, load_bundle
+from src.version import __version__
 
 LOGGER = logging.getLogger("loan_risk.audit")
 REQUESTS = Counter("loan_risk_requests_total", "Requests", ("route", "status"))
@@ -95,7 +96,7 @@ def create_app(
 
     application = FastAPI(
         title="Loan Default Risk Predictor",
-        version="0.2.0",
+        version=__version__,
         lifespan=lifespan,
         description="Model-backed research API. Not an automated lending decision system.",
     )

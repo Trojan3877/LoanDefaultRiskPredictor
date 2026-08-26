@@ -10,6 +10,10 @@ from threading import Lock
 
 class SlidingWindowRateLimiter:
     def __init__(self, limit: int, window_seconds: int = 60) -> None:
+        if limit < 1:
+            raise ValueError("limit must be positive")
+        if window_seconds < 1:
+            raise ValueError("window_seconds must be positive")
         self.limit = limit
         self.window_seconds = window_seconds
         self._events: dict[str, deque[float]] = defaultdict(deque)

@@ -2,123 +2,230 @@ name: Release
 
 on:
   push:
-    branches: [main]
+    tags: ["v*"]
   workflow_dispatch:
+    inputs:
+      tag:
+        description: Existing immutable vMAJOR.MINOR.PATCH tag to publish
+        required: true
+        type: string
 
 permissions:
   contents: write
   packages: write
   id-token: write
+  attestations: write
 
 concurrency:
-  group: release-v0.2.0
+  group: release-${{ inputs.tag || github.ref_name }}
   cancel-in-progress: false
 
 env:
   IMAGE: ghcr.io/coreyleath-code/loan-default-risk-predictor
-  VERSION: v0.2.0
 
 jobs:
-  publish:
-    if: github.event_name == 'workflow_dispatch' || contains(github.event.head_commit.message, 'release-v0.2.0')
+  verify-release:
     runs-on: ubuntu-latest
-    timeout-minutes: 30
+    timeout-minutes: 20
+    outputs:
+      version: ${{ steps.release.outputs.version }}
     steps:
       - name: Checkout release commit
         uses: actions/checkout@v4
         with:
+          ref: ${{ inputs.tag || github.ref }}
           fetch-depth: 0
-
-      - name: Refuse to mutate an existing release tag
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+          cache-dependency-path: requirements/dev.txt
+      - name: Validate immutable tag, package version, and quality gates
+        id: release
         run: |
-          if git ls-remote --exit-code --tags origin "refs/tags/${VERSION}" >/dev/null 2>&1; then
-            echo "Tag ${VERSION} already exists; refusing to mutate an immutable release." >&2
+          VERSION="${{ inputs.tag || github.ref_name }}"
+          if ! [[ "${VERSION}" =~ ^v[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
+            echo "Release tag must use vMAJOR.MINOR.PATCH." >&2
             exit 1
           fi
+          git rev-parse --verify "refs/tags/${VERSION}^{commit}" >/dev/null
+          PROJECT_VERSION="$(python -c 'from src.version import __version__; print(__version__)')"
+          test "v${PROJECT_VERSION}" = "${VERSION}"
+          test "$(git describe --tags --exact-match)" = "${VERSION}"
+          python -m pip install --requirement requirements/dev.txt
+          ruff check api src evaluation tests scripts benchmarks
+          mypy api --ignore-missing-imports
+          bandit -q -r api src evaluation -x tests -ll
+          python -m compileall -q api src evaluation tests scripts benchmarks
+          pytest --cov --cov-report=term-missing --cov-fail-under=80
+          pip-audit --requirement requirements/runtime.txt
+          echo "version=${VERSION}" >> "$GITHUB_OUTPUT"
 
+  build-python-package:
+    needs: verify-release
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ needs.verify-release.outputs.version }}
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Build and validate Python distributions
+        run: |
+          python -m pip install --upgrade build twine
+          python -m build
+          twine check dist/*
+          sha256sum dist/* > python-package-checksums.txt
+      - uses: actions/attest-build-provenance@v2
+        with:
+          subject-path: dist/*
+      - uses: actions/upload-artifact@v4
+        with:
+          name: python-distributions
+          path: |
+            dist/*
+            python-package-checksums.txt
+
+  publish-container:
+    needs: verify-release
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    outputs:
+      image_digest: ${{ steps.sign.outputs.image_digest }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ needs.verify-release.outputs.version }}
       - name: Build release image
         run: |
-          SHORT_SHA="${GITHUB_SHA::12}"
+          SHORT_SHA="$(git rev-parse --short=12 HEAD)"
           docker build \
-            --tag "${IMAGE}:${VERSION}" \
+            --tag "${IMAGE}:${{ needs.verify-release.outputs.version }}" \
             --tag "${IMAGE}:sha-${SHORT_SHA}" \
             .
-
       - name: Block high and critical image vulnerabilities
         uses: aquasecurity/trivy-action@v0.36.0
         with:
-          image-ref: ghcr.io/coreyleath-code/loan-default-risk-predictor:v0.2.0
+          image-ref: ${{ env.IMAGE }}:${{ needs.verify-release.outputs.version }}
           format: table
           exit-code: 1
           ignore-unfixed: true
           severity: CRITICAL,HIGH
-
       - name: Generate SPDX SBOM
         uses: aquasecurity/trivy-action@v0.36.0
         with:
-          image-ref: ghcr.io/coreyleath-code/loan-default-risk-predictor:v0.2.0
+          image-ref: ${{ env.IMAGE }}:${{ needs.verify-release.outputs.version }}
           format: spdx-json
           output: sbom.spdx.json
-
       - name: Authenticate to GHCR
         uses: docker/login-action@v3
         with:
           registry: ghcr.io
           username: ${{ github.actor }}
-          password: ${{ secrets.GITHUB_TOKEN }}
-
+          password: ${{ github.token }}
       - name: Publish semantic and immutable image tags
         run: |
-          SHORT_SHA="${GITHUB_SHA::12}"
-          docker push "${IMAGE}:${VERSION}"
+          SHORT_SHA="$(git rev-parse --short=12 HEAD)"
+          docker push "${IMAGE}:${{ needs.verify-release.outputs.version }}"
           docker push "${IMAGE}:sha-${SHORT_SHA}"
-
       - name: Install Cosign
         uses: sigstore/cosign-installer@v3
-
       - name: Sign immutable image digest
+        id: sign
         run: |
-          DIGEST="$(docker buildx imagetools inspect "${IMAGE}:${VERSION}" --format '{{.Manifest.Digest}}')"
+          DIGEST="$(docker buildx imagetools inspect "${IMAGE}:${{ needs.verify-release.outputs.version }}" --format '{{.Manifest.Digest}}')"
           test -n "${DIGEST}"
           cosign sign --yes "${IMAGE}@${DIGEST}"
           echo "IMAGE_DIGEST=${DIGEST}" >> "${GITHUB_ENV}"
-
-      - name: Build release evidence
+          echo "image_digest=${DIGEST}" >> "$GITHUB_OUTPUT"
+      - name: Build container release evidence
         run: |
-          SHORT_SHA="${GITHUB_SHA::12}"
+          SHORT_SHA="$(git rev-parse --short=12 HEAD)"
           {
-            echo "release=${VERSION}"
-            echo "source_commit=${GITHUB_SHA}"
-            echo "image=${IMAGE}:${VERSION}"
+            echo "release=${{ needs.verify-release.outputs.version }}"
+            echo "source_commit=$(git rev-parse HEAD)"
+            echo "image=${IMAGE}:${{ needs.verify-release.outputs.version }}"
             echo "immutable_image=${IMAGE}:sha-${SHORT_SHA}"
             echo "image_digest=${IMAGE_DIGEST}"
             echo "sbom=sbom.spdx.json"
             echo "signature=keyless-cosign-oidc"
             echo "model_quality_claim=none-without-versioned-representative-dataset"
           } > release-evidence.txt
-          sha256sum sbom.spdx.json release-evidence.txt > release-checksums.txt
-          cat > release-notes.md <<'EOF'
-          ## Loan Default Risk Predictor v0.2.0
+          sha256sum sbom.spdx.json release-evidence.txt > container-checksums.txt
+      - uses: actions/upload-artifact@v4
+        with:
+          name: container-release-evidence
+          path: |
+            sbom.spdx.json
+            release-evidence.txt
+            container-checksums.txt
 
-          Evidence-hardening release for the research-oriented loan-default risk pipeline and FastAPI serving contract.
+  publish-github-release:
+    needs: [verify-release, build-python-package, publish-container]
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ needs.verify-release.outputs.version }}
+      - uses: actions/download-artifact@v4
+        with:
+          path: release-assets
+          merge-multiple: true
+      - name: Build release notes and aggregate checksums
+        run: |
+          sha256sum release-assets/* > release-checksums.txt
+          cat > release-notes.md <<EOF
+          ## Loan Default Risk Predictor ${{ needs.verify-release.outputs.version }}
+
+          Production delivery release for the research-oriented loan-default risk pipeline and FastAPI service.
 
           ### Verified engineering scope
-          - Python 3.11/3.12 CI, static analysis, runtime dependency audit, and coverage gate.
-          - Checksummed model-bundle verification and fail-closed production readiness.
-          - Strict model probability contract and sample-weighted expected calibration error.
-          - Reproducible synthetic smoke benchmark with explicit scope and limitations.
-          - Non-root container validation, Kubernetes manifest validation, Trivy security gates, SPDX SBOM, and keyless Cosign image signing.
+          - Python static analysis, security lint, runtime dependency audit, and branch coverage gate.
+          - Signed GHCR image: \`${IMAGE}@${{ needs.publish-container.outputs.image_digest }}\`.
+          - Python source and wheel distributions validated by Twine and attested with GitHub build provenance.
+          - SPDX SBOM, SHA-256 checksums, and release evidence attached below.
+
+          ### Package publishing
+          The container is published to GHCR. PyPI trusted publishing runs only when the repository variable \`PUBLISH_PYPI\` is \`true\` and the protected \`pypi\` environment has been configured.
 
           ### Research boundary
           This release does not claim real-world loan-default model quality, fair-lending compliance, calibration adequacy, or production lending approval. Those require a versioned representative dataset and independent governance review.
           EOF
-
+      - name: Refuse to overwrite a release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          if gh release view "${{ needs.verify-release.outputs.version }}" >/dev/null 2>&1; then
+            echo "A GitHub Release already exists for this immutable tag." >&2
+            exit 1
+          fi
       - name: Publish immutable GitHub Release
         env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GH_TOKEN: ${{ github.token }}
         run: |
-          gh release create "${VERSION}" \
-            sbom.spdx.json release-evidence.txt release-checksums.txt \
-            --target "${GITHUB_SHA}" \
-            --title "Loan Default Risk Predictor ${VERSION}" \
+          gh release create "${{ needs.verify-release.outputs.version }}" \
+            release-assets/* release-checksums.txt \
+            --verify-tag \
+            --title "Loan Default Risk Predictor ${{ needs.verify-release.outputs.version }}" \
             --notes-file release-notes.md
+
+  publish-pypi:
+    needs: [verify-release, build-python-package, publish-github-release]
+    if: vars.PUBLISH_PYPI == 'true'
+    environment:
+      name: pypi
+      url: https://pypi.org/p/loan-default-risk-predictor
+    permissions:
+      id-token: write
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          name: python-distributions
+          path: dist
+      - uses: pypa/gh-action-pypi-publish@release/v1
+        with:
+          packages-dir: dist

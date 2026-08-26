@@ -2,6 +2,7 @@ import pandas as pd
 import pytest
 from fastapi.testclient import TestClient
 
+from api.controls import SlidingWindowRateLimiter
 from api.inference_api import _score, create_app
 from tests.helpers import create_test_bundle, valid_request
 
@@ -94,3 +95,9 @@ def test_production_requires_authentication_and_model(monkeypatch, tmp_path):
         create_app(bundle_path=tmp_path / "missing")
     ):
         pass
+
+
+@pytest.mark.parametrize("limit,window", [(0, 60), (1, 0)])
+def test_rate_limiter_rejects_invalid_configuration(limit, window):
+    with pytest.raises(ValueError, match="positive"):
+        SlidingWindowRateLimiter(limit=limit, window_seconds=window)
