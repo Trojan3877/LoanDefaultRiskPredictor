@@ -60,20 +60,24 @@ def run(iterations: int = 500, warmup: int = 50) -> dict:
             infer()
 
         latencies: list[float] = []
-        tracemalloc.start()
         started = time.perf_counter()
         for _ in range(iterations):
             call_started = time.perf_counter()
             infer()
             latencies.append((time.perf_counter() - call_started) * 1000)
         duration = time.perf_counter() - started
+
+        memory_probe_iterations = min(iterations, 100)
+        tracemalloc.start()
+        for _ in range(memory_probe_iterations):
+            infer()
         _, peak_memory = tracemalloc.get_traced_memory()
         tracemalloc.stop()
 
     return {
         "schema_version": 1,
         "generated_at": datetime.now(UTC).isoformat(),
-        "git_commit": os.getenv("GITHUB_SHA", "local-uncommitted"),
+        "git_commit": os.getenv("SOURCE_COMMIT") or os.getenv("GITHUB_SHA", "local-uncommitted"),
         "scope": "batch=1 preprocessing plus model inference; single process; no HTTP/network",
         "environment": {
             "python": platform.python_version(),
@@ -101,12 +105,14 @@ def run(iterations: int = 500, warmup: int = 50) -> dict:
             "latency_ms_max": round(max(latencies), 3),
             "sequential_inferences_per_second": round(iterations / duration, 3),
             "peak_traced_python_memory_bytes": peak_memory,
+            "memory_probe_iterations": memory_probe_iterations,
             "success_count": iterations,
             "success_rate": 1.0,
         },
         "limitations": [
             "Synthetic smoke bundle and one synthetic input",
             "Excludes HTTP, network, TLS, concurrency, and queueing",
+            "Memory tracing runs separately from the latency loop to avoid instrumentation bias",
             "Does not establish LightGBM model quality or a production SLO",
         ],
     }
