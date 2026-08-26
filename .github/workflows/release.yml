@@ -45,7 +45,7 @@ jobs:
             .
 
       - name: Block high and critical image vulnerabilities
-        uses: aquasecurity/trivy-action@0.33.1
+        uses: aquasecurity/trivy-action@v0.36.0
         with:
           image-ref: ghcr.io/coreyleath-code/loan-default-risk-predictor:v0.2.0
           format: table
@@ -54,7 +54,7 @@ jobs:
           severity: CRITICAL,HIGH
 
       - name: Generate SPDX SBOM
-        uses: aquasecurity/trivy-action@0.33.1
+        uses: aquasecurity/trivy-action@v0.36.0
         with:
           image-ref: ghcr.io/coreyleath-code/loan-default-risk-predictor:v0.2.0
           format: spdx-json
