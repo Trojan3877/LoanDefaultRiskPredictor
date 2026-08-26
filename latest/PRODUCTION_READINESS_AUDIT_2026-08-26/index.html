@@ -10,13 +10,9 @@
       
       
       
-        <link rel="canonical" href="https://coreyleath-code.github.io/LoanDefaultRiskPredictor/latest/L5_ENGINEERING_QUALITY/">
+        <link rel="canonical" href="https://coreyleath-code.github.io/LoanDefaultRiskPredictor/latest/PRODUCTION_READINESS_AUDIT_2026-08-26/">
       
       
-        <link rel="prev" href="../architecture/">
-      
-      
-        <link rel="next" href="../MODEL_CARD/">
       
       
         
@@ -27,7 +23,7 @@
     
     
       
-        <title>L5 Engineering Quality - Loan Default Risk Predictor</title>
+        <title>Production Readiness Audit — v0.3.0 - Loan Default Risk Predictor</title>
       
     
     
@@ -76,7 +72,7 @@
     <div data-md-component="skip">
       
         
-        <a href="#l5-engineering-quality-standard" class="md-skip">
+        <a href="#production-readiness-audit-v030" class="md-skip">
           Skip to content
         </a>
       
@@ -116,7 +112,7 @@
         <div class="md-header__topic" data-md-component="header-topic">
           <span class="md-ellipsis">
             
-              L5 Engineering Quality
+              Production Readiness Audit — v0.3.0
             
           </span>
         </div>
@@ -287,19 +283,10 @@
       
   
   
-    
   
   
-  
-    <li class="md-nav__item md-nav__item--active">
-      
-      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
-      
-      
-        
-      
-      
-      <a href="./" class="md-nav__link md-nav__link--active">
+    <li class="md-nav__item">
+      <a href="../L5_ENGINEERING_QUALITY/" class="md-nav__link">
         
   
   
@@ -315,7 +302,6 @@
   
 
       </a>
-      
     </li>
   
 
@@ -448,6 +434,69 @@
     
   
   
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#executive-decision" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Executive decision
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#findings-and-disposition" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Findings and disposition
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#validation-evidence" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Validation evidence
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#release-procedure-and-reproducibility" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Release procedure and reproducibility
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#residual-release-blockers-outside-this-pr" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Residual release blockers outside this PR
+      
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
 </nav>
                   </div>
                 </div>
@@ -466,60 +515,116 @@
   
 
 
-<h1 id="l5-engineering-quality-standard">L5 Engineering Quality Standard<a class="headerlink" href="#l5-engineering-quality-standard" title="Permanent link">&para;</a></h1>
-<p>L5 means the repository demonstrates system ownership through explicit contracts, measurable gates, failure behavior, operational evidence, and honest boundaries. It is not a job-title claim or regulatory certification.</p>
+<h1 id="production-readiness-audit-v030">Production Readiness Audit — v0.3.0<a class="headerlink" href="#production-readiness-audit-v030" title="Permanent link">&para;</a></h1>
+<p>Audit date: 2026-08-26
+Scope: application code, test and delivery controls, package artifacts, and release automation.</p>
+<h2 id="executive-decision">Executive decision<a class="headerlink" href="#executive-decision" title="Permanent link">&para;</a></h2>
+<p>The repository is ready to merge as a <strong>research-service engineering release</strong>. The pull request must remain blocked on its required GitHub checks. A production lending decision system is not approved by this audit: it lacks a permitted representative dataset, model-risk/fair-lending evidence, and deployment-specific governance.</p>
+<h2 id="findings-and-disposition">Findings and disposition<a class="headerlink" href="#findings-and-disposition" title="Permanent link">&para;</a></h2>
 <table>
 <thead>
 <tr>
-<th>Domain</th>
-<th>Automated evidence</th>
-<th>Owner response</th>
+<th>Priority</th>
+<th>Finding</th>
+<th>Disposition</th>
 </tr>
 </thead>
 <tbody>
 <tr>
-<td>Correctness</td>
-<td>strict schemas, model-backed E2E tests, &gt;=80% branch-aware coverage</td>
-<td>fix or revert</td>
+<td>P0</td>
+<td>The release workflow was fixed to <code>v0.2.0</code>, could run on arbitrary <code>main</code> pushes, and never built a Python package.</td>
+<td>Fixed. Only an existing <code>vMAJOR.MINOR.PATCH</code> tag matching <code>src.version.__version__</code> can release; the workflow rebuilds quality gates, creates sdist/wheel artifacts, validates them with Twine, and attaches them to the GitHub Release.</td>
 </tr>
 <tr>
-<td>Research validity</td>
-<td>temporal-preferred split, baseline, calibration/ranking metrics, uncertainty</td>
-<td>invalidate unsupported report</td>
+<td>P1</td>
+<td>Package metadata, release version, and the FastAPI OpenAPI version could drift.</td>
+<td>Fixed. <code>src/version.py</code> is the dynamic setuptools version source and the API imports it.</td>
 </tr>
 <tr>
-<td>Artifact integrity</td>
-<td>schema validation and SHA-256 before deserialization</td>
-<td>reject/revoke bundle</td>
+<td>P1</td>
+<td>Release artifact provenance and integrity were incomplete for Python packages.</td>
+<td>Fixed. GitHub build provenance attestation, per-package SHA-256 checksums, SBOM, container evidence, and aggregate checksums are generated and attached.</td>
 </tr>
 <tr>
-<td>Security</td>
-<td>Ruff, mypy, Bandit, pip-audit, non-root/read-only runtime</td>
-<td>patch or time-bound exception</td>
+<td>P1</td>
+<td>A caller could configure a non-functional rate limiter (<code>limit &lt;= 0</code> or non-positive window).</td>
+<td>Fixed with input validation and tests.</td>
 </tr>
 <tr>
-<td>Reliability</td>
-<td>fail-closed startup, readiness, limits, smoke inference, probes</td>
-<td>rollback to last-known-good</td>
+<td>P2</td>
+<td>Calibration accepted targets outside the binary label contract.</td>
+<td>Fixed with explicit validation and tests.</td>
 </tr>
 <tr>
-<td>Supply chain</td>
-<td>dependency audit, Trivy, SBOM, signed image</td>
-<td>block unsigned release</td>
-</tr>
-<tr>
-<td>Observability</td>
-<td>bounded-cardinality service/model/feedback telemetry</td>
-<td>investigate SLO or drift alert</td>
-</tr>
-<tr>
-<td>Governance</td>
-<td>model/policy versions, limitations, approval checklist</td>
-<td>require human sign-off</td>
+<td>P2</td>
+<td>Local test execution could fail in locked-down Windows profiles because pytest used the profile temp directory.</td>
+<td>Documented deterministic <code>--basetemp .testtmp</code> execution; <code>.testtmp</code> is ignored. This is an environment constraint, not a product defect.</td>
 </tr>
 </tbody>
 </table>
-<p>Exceptions require a GitHub issue with owner, risk, compensating control, expiration, and removal plan. New critical code requires focused tests even when aggregate coverage passes.</p>
+<h2 id="validation-evidence">Validation evidence<a class="headerlink" href="#validation-evidence" title="Permanent link">&para;</a></h2>
+<p>Run in a clean Python 3.12.13 virtual environment on Windows on 2026-08-26:</p>
+<table>
+<thead>
+<tr>
+<th>Gate</th>
+<th style="text-align: right;">Result</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Ruff</td>
+<td style="text-align: right;">passed</td>
+</tr>
+<tr>
+<td>mypy (<code>api</code>)</td>
+<td style="text-align: right;">passed</td>
+</tr>
+<tr>
+<td>Bandit (<code>api</code>, <code>src</code>, <code>evaluation</code>)</td>
+<td style="text-align: right;">passed</td>
+</tr>
+<tr>
+<td>pytest</td>
+<td style="text-align: right;">26 passed, 0 failed, 0 warnings</td>
+</tr>
+<tr>
+<td>Branch coverage</td>
+<td style="text-align: right;">82.31% (required: 80%)</td>
+</tr>
+<tr>
+<td>Distribution build</td>
+<td style="text-align: right;">sdist and universal wheel built successfully</td>
+</tr>
+<tr>
+<td>Twine metadata check</td>
+<td style="text-align: right;">passed for both artifacts</td>
+</tr>
+<tr>
+<td>Release workflow YAML parse</td>
+<td style="text-align: right;">passed</td>
+</tr>
+<tr>
+<td>Runtime dependency audit</td>
+<td style="text-align: right;">no known vulnerabilities</td>
+</tr>
+</tbody>
+</table>
+<h2 id="release-procedure-and-reproducibility">Release procedure and reproducibility<a class="headerlink" href="#release-procedure-and-reproducibility" title="Permanent link">&para;</a></h2>
+<ol>
+<li>Merge the green PR and wait for the <code>main</code> checks to pass.</li>
+<li>Confirm the version in <code>src/version.py</code> and create a signed immutable tag of the same value: <code>v0.3.0</code>.</li>
+<li>Push the tag. The release workflow validates the tag/source pairing, repeats code-quality and dependency checks, builds distributions, scans/signs the container, and creates the GitHub Release.</li>
+<li>Verify the release’s attached wheel/sdist checksums and GitHub attestation. Verify the GHCR image with Cosign before deployment.</li>
+</ol>
+<p>The pipeline publishes the container to GHCR automatically. PyPI publication is intentionally gated by repository variable <code>PUBLISH_PYPI=true</code> and the protected <code>pypi</code> environment configured for PyPI trusted publishing. This avoids embedding a long-lived package credential in source or Actions secrets.</p>
+<h2 id="residual-release-blockers-outside-this-pr">Residual release blockers outside this PR<a class="headerlink" href="#residual-release-blockers-outside-this-pr" title="Permanent link">&para;</a></h2>
+<ul>
+<li>Repository administrators must configure branch protection with the CI, security, CodeQL, dependency-review, and container scan checks required before merge.</li>
+<li>PyPI trusted publisher configuration is an external PyPI/repository administration action; this code cannot create it safely.</li>
+<li>A maintainer needs permission to create and push the annotated release tag. Commit/tag signing is recommended by organizational policy.</li>
+<li>Any production deployment remains subject to data, privacy, legal, security, model-risk, and fair-lending approvals.</li>
+</ul>
 
 
 
@@ -552,7 +657,7 @@
     <span class="md-icon" title="Created">
       <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M14.47 15.08 11 13V7h1.5v5.25l3.08 1.83c-.41.28-.79.62-1.11 1m-1.39 4.84c-.36.05-.71.08-1.08.08-4.42 0-8-3.58-8-8s3.58-8 8-8 8 3.58 8 8c0 .37-.03.72-.08 1.08.69.1 1.33.32 1.92.64.1-.56.16-1.13.16-1.72 0-5.5-4.5-10-10-10S2 6.5 2 12s4.47 10 10 10c.59 0 1.16-.06 1.72-.16-.32-.59-.54-1.23-.64-1.92M18 15v3h-3v2h3v3h2v-3h3v-2h-3v-3z"/></svg>
     </span>
-    <span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-date" title="July 22, 2026 23:23:38 UTC">July 22, 2026</span>
+    <span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-date" title="August 26, 2026 16:07:44 UTC">August 26, 2026</span>
   </span>
 
     
