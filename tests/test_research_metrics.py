@@ -24,7 +24,7 @@ def test_expected_calibration_error_is_sample_weighted_and_validated():
     truth = np.array([0, 0, 1, 1])
     scores = np.array([0.1, 0.2, 0.8, 0.9])
     assert expected_calibration_error(truth, scores) == pytest.approx(0.15)
-    with pytest.raises(ValueError, match="\[0, 1\]"):
+    with pytest.raises(ValueError, match=r"\[0, 1\]"):
         expected_calibration_error(truth, np.array([0.1, 0.2, 0.8, 1.2]))
 
 
