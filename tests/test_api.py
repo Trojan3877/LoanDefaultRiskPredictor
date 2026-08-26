@@ -1,7 +1,8 @@
+import pandas as pd
 import pytest
 from fastapi.testclient import TestClient
 
-from api.inference_api import create_app
+from api.inference_api import _score, create_app
 from tests.helpers import create_test_bundle, valid_request
 
 
@@ -53,6 +54,15 @@ def test_malformed_model_output_is_sanitized(tmp_path, monkeypatch):
 
     assert response.status_code == 503
     assert response.json() == {"detail": "Model scoring unavailable"}
+
+
+def test_score_rejects_out_of_range_probability():
+    class InvalidProbabilityModel:
+        def predict(self, _frame):
+            return [1.2]
+
+    with pytest.raises(ValueError, match=r"outside \[0, 1\]"):
+        _score(InvalidProbabilityModel(), pd.DataFrame([{"feature": 1}]))
 
 
 def test_request_contract_rejects_invalid_and_extra_values(tmp_path):
