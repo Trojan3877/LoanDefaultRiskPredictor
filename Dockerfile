@@ -8,12 +8,29 @@ ENV PYTHONDONTWRITEBYTECODE=1 \
 
 WORKDIR /app
 
+# Patch security-sensitive OS libraries exposed by the slim base image before
+# installing application dependencies. Keep package-manager caches out of the
+# final layer.
+RUN apt-get update \
+    && apt-get install --only-upgrade -y --no-install-recommends \
+       openssl libssl3t64 openssl-provider-legacy \
+    && rm -rf /var/lib/apt/lists/*
+
 RUN groupadd --system --gid 10001 app \
     && useradd --system --uid 10001 --gid app --home /app app
 
 COPY requirements/runtime.txt ./requirements/runtime.txt
-RUN python -m pip install --upgrade pip \
-    && python -m pip install --requirement requirements/runtime.txt
+
+# Build tooling is required only while installing wheels. Upgrade it past known
+# vulnerable versions, install runtime dependencies, then remove packaging tools
+# from the final image so they are not part of the runtime attack surface.
+RUN python -m pip install --upgrade \
+      "pip>=26.2.1,<27" \
+      "setuptools>=80.9,<81" \
+      "wheel>=0.46.2,<0.47" \
+      "jaraco.context>=6.1,<7" \
+    && python -m pip install --requirement requirements/runtime.txt \
+    && python -m pip uninstall -y pip setuptools wheel jaraco.context
 
 COPY --chown=app:app api ./api
 COPY --chown=app:app src ./src
