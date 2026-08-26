@@ -27,6 +27,8 @@ def expected_calibration_error(y_true, probabilities, bins: int = 10) -> float:
     scores = np.asarray(probabilities, dtype=float)
     if truth.shape != scores.shape or truth.ndim != 1 or len(truth) == 0:
         raise ValueError("Calibration inputs must be non-empty one-dimensional arrays of equal size")
+    if not np.all(np.isin(truth, (0, 1))):
+        raise ValueError("Calibration targets must be binary values 0 or 1")
     if bins < 1:
         raise ValueError("bins must be positive")
     if not np.all(np.isfinite(scores)) or np.any((scores < 0.0) | (scores > 1.0)):

@@ -130,6 +130,9 @@ celerybeat.pid
 # Environments
 .env
 .venv
+.audit-venv/
+.pytest_tmp*/
+.pip-audit-cache/
 env/
 venv/
 ENV/

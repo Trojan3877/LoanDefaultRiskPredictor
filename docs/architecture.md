@@ -20,4 +20,4 @@ Startup verifies the manifest and checksum before deserialization. Production re
 
 ## Deployment path
 
-CI enforces Python 3.11/3.12 tests, 75% coverage, static/security/dependency gates, trained-bundle container smoke inference, Compose/Kubernetes validation, Trivy/SBOM, and signed GHCR releases. Runtime identity is non-root with read-only filesystems, resource limits, probes, and no service-account token.
+CI enforces Python 3.11/3.12 tests, 80% coverage, static/security/dependency gates, trained-bundle container smoke inference, and Compose/Kubernetes validation. Immutable semantic tags invoke the release pipeline, which rebuilds the quality gates, produces attested Python source/wheel distributions, scans and signs the GHCR image, and attaches the SBOM and checksums to a GitHub Release. Runtime identity is non-root with read-only filesystems, resource limits, probes, and no service-account token.

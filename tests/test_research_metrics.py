@@ -26,6 +26,8 @@ def test_expected_calibration_error_is_sample_weighted_and_validated():
     assert expected_calibration_error(truth, scores) == pytest.approx(0.15)
     with pytest.raises(ValueError, match=r"\[0, 1\]"):
         expected_calibration_error(truth, np.array([0.1, 0.2, 0.8, 1.2]))
+    with pytest.raises(ValueError, match="binary"):
+        expected_calibration_error(np.array([0, 2]), np.array([0.2, 0.8]))
 
 
 def test_group_metrics_enforces_minimum_cohort():
