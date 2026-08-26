@@ -3,7 +3,6 @@
 from __future__ import annotations
 
 import numpy as np
-from sklearn.calibration import calibration_curve
 from sklearn.metrics import (
     accuracy_score,
     average_precision_score,
@@ -17,15 +16,42 @@ from sklearn.metrics import (
 )
 
 
+def expected_calibration_error(y_true, probabilities, bins: int = 10) -> float:
+    """Return sample-weighted ECE over fixed-width probability bins.
+
+    ECE is the weighted absolute gap between empirical event frequency and mean
+    predicted probability in each non-empty bin. Empty bins contribute zero.
+    """
+
+    truth = np.asarray(y_true, dtype=int)
+    scores = np.asarray(probabilities, dtype=float)
+    if truth.shape != scores.shape or truth.ndim != 1 or len(truth) == 0:
+        raise ValueError("Calibration inputs must be non-empty one-dimensional arrays of equal size")
+    if bins < 1:
+        raise ValueError("bins must be positive")
+    if not np.all(np.isfinite(scores)) or np.any((scores < 0.0) | (scores > 1.0)):
+        raise ValueError("Probabilities must be finite values in [0, 1]")
+
+    bin_ids = np.digitize(scores, np.linspace(0.0, 1.0, bins + 1)[1:-1], right=True)
+    error = 0.0
+    for bin_id in range(bins):
+        mask = bin_ids == bin_id
+        count = int(mask.sum())
+        if count:
+            observed = float(np.mean(truth[mask]))
+            predicted = float(np.mean(scores[mask]))
+            error += (count / len(truth)) * abs(observed - predicted)
+    return float(error)
+
+
 def classification_metrics(y_true, probabilities, threshold: float = 0.5) -> dict[str, float | int]:
     truth = np.asarray(y_true, dtype=int)
     scores = np.asarray(probabilities, dtype=float)
+    if not 0.0 <= threshold <= 1.0:
+        raise ValueError("threshold must be in [0, 1]")
+    ece = expected_calibration_error(truth, scores)
     labels = scores >= threshold
     tn, fp, fn, tp = confusion_matrix(truth, labels, labels=[0, 1]).ravel()
-    observed, predicted = calibration_curve(
-        truth, scores, n_bins=min(10, len(truth)), strategy="quantile"
-    )
-    ece = float(np.mean(np.abs(observed - predicted))) if len(observed) else 0.0
     return {
         "roc_auc": float(roc_auc_score(truth, scores)),
         "pr_auc": float(average_precision_score(truth, scores)),
