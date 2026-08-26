@@ -1,0 +1,124 @@
+name: Release
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: write
+  packages: write
+  id-token: write
+
+concurrency:
+  group: release-v0.2.0
+  cancel-in-progress: false
+
+env:
+  IMAGE: ghcr.io/coreyleath-code/loan-default-risk-predictor
+  VERSION: v0.2.0
+
+jobs:
+  publish:
+    if: github.event_name == 'workflow_dispatch' || contains(github.event.head_commit.message, 'release-v0.2.0')
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - name: Checkout release commit
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Refuse to mutate an existing release tag
+        run: |
+          if git ls-remote --exit-code --tags origin "refs/tags/${VERSION}" >/dev/null 2>&1; then
+            echo "Tag ${VERSION} already exists; refusing to mutate an immutable release." >&2
+            exit 1
+          fi
+
+      - name: Build release image
+        run: |
+          SHORT_SHA="${GITHUB_SHA::12}"
+          docker build \
+            --tag "${IMAGE}:${VERSION}" \
+            --tag "${IMAGE}:sha-${SHORT_SHA}" \
+            .
+
+      - name: Block high and critical image vulnerabilities
+        uses: aquasecurity/trivy-action@0.33.1
+        with:
+          image-ref: ghcr.io/coreyleath-code/loan-default-risk-predictor:v0.2.0
+          format: table
+          exit-code: 1
+          ignore-unfixed: true
+          severity: CRITICAL,HIGH
+
+      - name: Generate SPDX SBOM
+        uses: aquasecurity/trivy-action@0.33.1
+        with:
+          image-ref: ghcr.io/coreyleath-code/loan-default-risk-predictor:v0.2.0
+          format: spdx-json
+          output: sbom.spdx.json
+
+      - name: Authenticate to GHCR
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Publish semantic and immutable image tags
+        run: |
+          SHORT_SHA="${GITHUB_SHA::12}"
+          docker push "${IMAGE}:${VERSION}"
+          docker push "${IMAGE}:sha-${SHORT_SHA}"
+
+      - name: Install Cosign
+        uses: sigstore/cosign-installer@v3
+
+      - name: Sign immutable image digest
+        run: |
+          DIGEST="$(docker buildx imagetools inspect "${IMAGE}:${VERSION}" --format '{{.Manifest.Digest}}')"
+          test -n "${DIGEST}"
+          cosign sign --yes "${IMAGE}@${DIGEST}"
+          echo "IMAGE_DIGEST=${DIGEST}" >> "${GITHUB_ENV}"
+
+      - name: Build release evidence
+        run: |
+          SHORT_SHA="${GITHUB_SHA::12}"
+          {
+            echo "release=${VERSION}"
+            echo "source_commit=${GITHUB_SHA}"
+            echo "image=${IMAGE}:${VERSION}"
+            echo "immutable_image=${IMAGE}:sha-${SHORT_SHA}"
+            echo "image_digest=${IMAGE_DIGEST}"
+            echo "sbom=sbom.spdx.json"
+            echo "signature=keyless-cosign-oidc"
+            echo "model_quality_claim=none-without-versioned-representative-dataset"
+          } > release-evidence.txt
+          sha256sum sbom.spdx.json release-evidence.txt > release-checksums.txt
+          cat > release-notes.md <<'EOF'
+          ## Loan Default Risk Predictor v0.2.0
+
+          Evidence-hardening release for the research-oriented loan-default risk pipeline and FastAPI serving contract.
+
+          ### Verified engineering scope
+          - Python 3.11/3.12 CI, static analysis, runtime dependency audit, and coverage gate.
+          - Checksummed model-bundle verification and fail-closed production readiness.
+          - Strict model probability contract and sample-weighted expected calibration error.
+          - Reproducible synthetic smoke benchmark with explicit scope and limitations.
+          - Non-root container validation, Kubernetes manifest validation, Trivy security gates, SPDX SBOM, and keyless Cosign image signing.
+
+          ### Research boundary
+          This release does not claim real-world loan-default model quality, fair-lending compliance, calibration adequacy, or production lending approval. Those require a versioned representative dataset and independent governance review.
+          EOF
+
+      - name: Publish immutable GitHub Release
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          gh release create "${VERSION}" \
+            sbom.spdx.json release-evidence.txt release-checksums.txt \
+            --target "${GITHUB_SHA}" \
+            --title "Loan Default Risk Predictor ${VERSION}" \
+            --notes-file release-notes.md
