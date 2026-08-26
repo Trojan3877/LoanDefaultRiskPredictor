@@ -1,4 +1,4 @@
-name: L5 Production Candidate Quality
+name: L6 Evidence & Delivery Quality
 
 on:
   push:
@@ -31,18 +31,19 @@ jobs:
       - run: python -m pip install --requirement requirements/dev.txt
       - name: Static and security gates
         run: |
-          ruff check api src evaluation tests scripts
+          ruff check api src evaluation tests scripts benchmarks
           mypy api --ignore-missing-imports
           bandit -q -r api src evaluation -x tests -ll
       - name: Test critical paths
         run: |
-          python -m compileall -q api src evaluation tests scripts
-          pytest --cov --cov-report=term-missing --cov-report=xml --cov-fail-under=75
+          python -m compileall -q api src evaluation tests scripts benchmarks
+          pytest --cov --cov-report=term-missing --cov-report=xml --cov-fail-under=80
       - uses: actions/upload-artifact@v4
         with:
           name: coverage-python-${{ matrix.python }}
           path: coverage.xml
-      - run: pip-audit --requirement requirements/runtime.txt
+      - name: Audit runtime dependencies
+        run: pip-audit --requirement requirements/runtime.txt
 
   deployment-hygiene:
     runs-on: ubuntu-latest
@@ -53,6 +54,12 @@ jobs:
         with:
           python-version: "3.11"
       - run: python -m pip install --requirement requirements/dev.txt
+      - name: Generate CI benchmark evidence
+        run: python -m benchmarks.inference --iterations 1000 --warmup 100 --output outputs/ci-inference-benchmark.json
+      - uses: actions/upload-artifact@v4
+        with:
+          name: benchmark-evidence
+          path: outputs/ci-inference-benchmark.json
       - name: Create a CI-only verified bundle
         run: python -m scripts.build_smoke_bundle --output models/ci
       - run: docker build --tag loan-risk-api:ci .
