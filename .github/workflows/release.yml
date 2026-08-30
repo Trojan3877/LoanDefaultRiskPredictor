@@ -31,7 +31,7 @@ jobs:
       version: ${{ steps.release.outputs.version }}
     steps:
       - name: Checkout release commit
-        uses: actions/checkout@v4
+        uses: actions/checkout@v7
         with:
           ref: ${{ inputs.tag || github.ref }}
           fetch-depth: 0
@@ -66,7 +66,7 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 15
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
         with:
           ref: ${{ needs.verify-release.outputs.version }}
       - uses: actions/setup-python@v7
@@ -95,7 +95,7 @@ jobs:
     outputs:
       image_digest: ${{ steps.sign.outputs.image_digest }}
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
         with:
           ref: ${{ needs.verify-release.outputs.version }}
       - name: Build release image
@@ -167,7 +167,7 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 15
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
         with:
           ref: ${{ needs.verify-release.outputs.version }}
       - uses: actions/download-artifact@v8
