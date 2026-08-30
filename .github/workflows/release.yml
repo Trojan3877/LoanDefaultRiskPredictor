@@ -81,7 +81,7 @@ jobs:
       - uses: actions/attest-build-provenance@v2
         with:
           subject-path: dist/*
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@v7
         with:
           name: python-distributions
           path: |
@@ -154,7 +154,7 @@ jobs:
             echo "model_quality_claim=none-without-versioned-representative-dataset"
           } > release-evidence.txt
           sha256sum sbom.spdx.json release-evidence.txt > container-checksums.txt
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@v7
         with:
           name: container-release-evidence
           path: |
